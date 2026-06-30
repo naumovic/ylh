@@ -1,6 +1,6 @@
 // Standalone sanity run (no test runner needed): node --experimental-strip-types run-check.ts
 import { recommend } from './engine.ts';
-import { buildPlan, scenarios } from './report.ts';
+import { buildPlan } from './report.ts';
 import { ratesFor, rebate } from './config.ts';
 import type { Intake } from './types.ts';
 
