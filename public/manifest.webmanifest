@@ -1,0 +1,12 @@
+{
+  "name": "Your Local Hero",
+  "short_name": "Local Hero",
+  "description": "Independent solar, EV & battery advice for Australian homes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F9FB",
+  "theme_color": "#14304B",
+  "icons": [
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

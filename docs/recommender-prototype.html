@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solar · EV · Battery Advisor — QLD prototype</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --panel2:#1d2a3a; --line:#2a3a4d;
+    --ink:#e8eef5; --muted:#9fb1c4; --accent:#f5b301; --accent2:#3fb6ff;
+    --good:#46c98b; --warn:#ffb454; --bad:#ff6b6b; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);padding:24px;}
+  h1{font-size:22px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .wrap{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start;max-width:1180px}
+  @media(max-width:880px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select{width:100%;padding:9px 10px;background:var(--panel2);border:1px solid var(--line);
+               border-radius:8px;color:var(--ink);font-size:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{padding:6px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+        font-size:12px;cursor:pointer;user-select:none}
+  .chip.on{background:var(--accent);color:#1a1a1a;border-color:var(--accent);font-weight:600}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .preset{padding:7px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+          font-size:12px;cursor:pointer;color:var(--accent2)}
+  .preset:hover{border-color:var(--accent2)}
+  button.go{margin-top:16px;width:100%;padding:12px;background:var(--accent);color:#1a1a1a;border:none;
+            border-radius:9px;font-size:15px;font-weight:700;cursor:pointer}
+  .headline{background:linear-gradient(135deg,#1d2a3a,#16212e);border:1px solid var(--line);
+            border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  .headline .tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .headline .big{font-size:20px;font-weight:700;margin:4px 0 6px}
+  .headline .why{color:var(--muted);font-size:14px}
+  .opt{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--panel2)}
+  .opt.win{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .opt .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .opt .name{font-weight:700;font-size:15px}
+  .opt .pb{font-size:13px;color:var(--muted);white-space:nowrap}
+  .opt .nums{display:flex;gap:18px;margin:8px 0;flex-wrap:wrap}
+  .opt .nums div{font-size:13px}
+  .opt .nums b{display:block;font-size:16px}
+  .opt .reason{font-size:13px;color:var(--muted)}
+  .pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+  .pill.good{background:rgba(70,201,139,.16);color:var(--good)}
+  .pill.warn{background:rgba(255,180,84,.16);color:var(--warn)}
+  .pill.bad{background:rgba(255,107,107,.16);color:var(--bad)}
+  .assume{font-size:12px;color:var(--muted);margin-top:6px;border-top:1px dashed var(--line);padding-top:10px}
+  .assume code{color:var(--accent2)}
+  .disc{font-size:11px;color:var(--muted);margin-top:14px;font-style:italic}
+  .empty{color:var(--muted);font-size:14px}
+  details.adv{margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  details.adv summary{cursor:pointer;font-size:12px;color:var(--accent2)}
+  details.adv .row{margin-top:8px}
+  .stateline{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4}
+  .paywall{margin-top:14px;border:1px dashed var(--accent);border-radius:10px;padding:14px;background:rgba(245,179,1,.06)}
+  .paywall .lock{font-weight:700;font-size:15px;margin-bottom:4px}
+  .paywall .blurb{font-size:13px;color:var(--muted)}
+  .paywall button{margin-top:10px;padding:10px 14px;background:var(--accent);color:#1a1a1a;border:none;border-radius:8px;font-weight:700;cursor:pointer}
+  .report{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--panel2)}
+  .report h3{margin:0 0 6px;font-size:16px}
+  .report h4{margin:14px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .report p{font-size:14px;margin:6px 0}
+  .report ul{margin:6px 0;padding-left:18px}
+  .report li{margin:4px 0;font-size:13px}
+  .report .kb{font-size:13px;color:var(--muted)}
+  .report .opt2{font-size:13px;color:var(--accent2);margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+  .report .free{font-size:11px;color:var(--good);text-transform:uppercase;letter-spacing:.06em}
+  .report table th{font-weight:600}
+  @media print{
+    body * { visibility:hidden; }
+    #report, #report * { visibility:visible; }
+    #report { position:absolute; left:0; top:0; width:100%; }
+  }
+</style>
+</head>
+<body>
+  <h1>Solar · EV · Battery Advisor <span style="color:var(--muted);font-weight:400">— AU prototype</span></h1>
+  <div class="sub">Enter a few numbers off your bill. The engine ranks: battery · EV daytime charging · more solar · do nothing. Rates are auto-set from your postcode (any Australian state). Deterministic — no AI in the maths. Rough, general information only.</div>
+
+  <div class="wrap">
+    <!-- INTAKE -->
+    <div class="card">
+      <h2>Try a use case</h2>
+      <div class="presets" id="presets"></div>
+
+      <h2 style="margin-top:6px">Your details</h2>
+      <div class="row">
+        <div><label>Postcode</label><input id="postcode" value="4000"></div>
+        <div id="netWrap"><label>QLD network</label>
+          <select id="network"><option value="energex">Energex (SE QLD)</option><option value="ergon">Ergon (regional)</option></select>
+        </div>
+      </div>
+      <div class="stateline" id="stateline"></div>
+      <details class="adv">
+        <summary>Advanced — electricity rates (auto-set from postcode; edit to override)</summary>
+        <div class="row">
+          <div><label>Import rate (c/kWh)</label><input id="importRate" type="number" value="30"></div>
+          <div><label>Feed-in tariff (c/kWh)</label><input id="fit" type="number" value="5"></div>
+        </div>
+      </details>
+
+      <label>Do you have solar?</label>
+      <select id="solarStatus">
+        <option value="have">Yes — I have solar</option>
+        <option value="none">No solar yet</option>
+      </select>
+
+      <label>Billing period</label>
+      <select id="period"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option></select>
+      <div class="row">
+        <div><label id="importLabel">Grid import (kWh)</label><input id="import" type="number" value="200"></div>
+        <div id="exportWrap"><label>Solar export (kWh)</label><input id="export" type="number" value="400"></div>
+      </div>
+
+      <label>Usage pattern</label>
+      <select id="profile">
+        <option value="day_heavy">Day-heavy (home in the day / WFH)</option>
+        <option value="even">Even</option>
+        <option value="night_heavy">Night-heavy (out all day)</option>
+        <option value="unknown">Not sure</option>
+      </select>
+
+      <div id="solarHaveBlock">
+        <div class="row">
+          <div><label>Solar size now (kW)</label><input id="solarKw" type="number" value="6.6"></div>
+          <div><label>Solar age (yrs)</label><input id="solarAge" type="number" value="4"></div>
+        </div>
+        <label>Panels to add — model an upgrade (kW)</label>
+        <input id="addKw" type="number" value="3" step="0.5">
+      </div>
+
+      <label>Electric vehicle</label>
+      <select id="ev">
+        <option value="none">None / no plans</option>
+        <option value="buying">About to buy one</option>
+        <option value="own">Already own one</option>
+      </select>
+      <label>EV charging window</label>
+      <select id="charge">
+        <option value="daytime_home">Daytime at home (WFH)</option>
+        <option value="night_home">Overnight at home</option>
+        <option value="away">Away / public charging</option>
+      </select>
+
+      <label>Goals</label>
+      <div class="chips" id="goals">
+        <span class="chip on" data-g="bill_savings">Lower bills</span>
+        <span class="chip" data-g="backup">Backup power</span>
+        <span class="chip" data-g="go_electric">Go electric</span>
+      </div>
+
+      <button class="go" onclick="run()">Work out what I need →</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div>
+      <div id="headline"></div>
+      <div class="card">
+        <h2>Ranked options</h2>
+        <div id="results"><div class="empty">Fill in the form (or pick a use case) and hit “Work out what I need”.</div></div>
+        <div id="assume"></div>
+        <div id="paywall"></div>
+        <div id="report"></div>
+        <div class="disc">General information only — not personal financial or product advice. Incentive/tariff figures reflect Australia mid-2026 and change over time.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---- Config (mirrors config/incentives.yaml, mid-2026) ----
+const CFG = {
+  stcFactor:6.8, stcPrice:37, taper:[[14,1.0],[28,0.6],[50,0.15]], maxKwh:50,
+  batteryGrossPerKwh:1000, minBatteryKwh:5,
+  solarCostPerKw:900, solarSelfConsumeFrac:0.6, genFactor:4.0, // kWh/kW/day SEQ
+  evChargerCost:1800, evAnnualKm:12000, evKwhPer100:16,
+  eveningFrac:{night_heavy:0.75, even:0.5, day_heavy:0.30, unknown:0.5}
+};
+
+// ---- State rate defaults (rough mid-2026 residential; user can override) ----
+const STATES={
+  NSW:{label:"NSW",imp:32,fit:5}, VIC:{label:"VIC",imp:28,fit:4}, QLD:{label:"QLD",imp:30,fit:5},
+  SA:{label:"SA",imp:44,fit:4},  WA:{label:"WA (DEBS)",imp:30,fit:3}, TAS:{label:"TAS",imp:30,fit:9},
+  ACT:{label:"ACT",imp:25,fit:6}, NT:{label:"NT",imp:28,fit:9}
+};
+function deriveState(pc){
+  pc=(pc||"").trim(); const d=pc[0]; const n=+pc;
+  if(d==="2"){ if((n>=2600&&n<=2618)||(n>=2900&&n<=2920)) return "ACT"; return "NSW"; }
+  if(d==="0") return "NT";
+  return {"3":"VIC","4":"QLD","5":"SA","6":"WA","7":"TAS"}[d]||"QLD";
+}
+function applyRates(){
+  const st=deriveState($("postcode").value);
+  $("netWrap").style.display = st==="QLD" ? "" : "none";
+  let imp=STATES[st].imp, fit=STATES[st].fit;
+  if(st==="QLD" && $("network").value==="ergon") fit=6.006;
+  $("importRate").value=imp; $("fit").value=fit;
+  $("stateline").innerHTML=`Detected <b style="color:var(--ink)">${STATES[st].label}</b> — rates auto-set to ~${imp}c import / ${fit}c feed-in (override in Advanced). Tool works Australia-wide; human advice + vetted installers start in QLD.`;
+}
+
+// ---- Presets (span several states to show national coverage) ----
+const PRESETS = {
+  "Mihajlo (QLD)":{postcode:"4000",network:"energex",solarStatus:"have",period:"monthly",import:200,export:400,profile:"day_heavy",solarKw:6.6,solarAge:4,addKw:3,ev:"buying",charge:"daytime_home",goals:["bill_savings","go_electric"]},
+  "No solar yet (NSW)":{postcode:"2170",network:"energex",solarStatus:"none",period:"monthly",import:900,export:0,profile:"day_heavy",solarKw:0,solarAge:0,addKw:0,ev:"buying",charge:"daytime_home",goals:["bill_savings","go_electric"]},
+  "Out-all-day (VIC)":{postcode:"3350",network:"energex",solarStatus:"have",period:"monthly",import:600,export:300,profile:"night_heavy",solarKw:5,solarAge:6,addKw:3,ev:"none",charge:"night_home",goals:["bill_savings"]},
+  "Small / old solar (QLD reg.)":{postcode:"4870",network:"ergon",solarStatus:"have",period:"monthly",import:500,export:60,profile:"day_heavy",solarKw:2,solarAge:11,addKw:5,ev:"none",charge:"night_home",goals:["bill_savings"]},
+  "Wants backup (SA)":{postcode:"5000",network:"energex",solarStatus:"have",period:"monthly",import:450,export:350,profile:"even",solarKw:6.6,solarAge:2,addKw:3,ev:"none",charge:"night_home",goals:["bill_savings","backup"]}
+};
+
+// ---- helpers ----
+const $=id=>document.getElementById(id);
+function rebate(kwh){ // STC rebate $ for usable kWh, applying taper bands
+  let prev=0,stc=0;
+  for(const [cap,mult] of CFG.taper){
+    if(kwh>prev){ const band=Math.min(kwh,cap)-prev; stc+=band*CFG.stcFactor*mult; prev=cap; }
+  }
+  return stc*CFG.stcPrice;
+}
+const fmt=n=>'$'+Math.round(n).toLocaleString();
+function pb(years){ if(!isFinite(years)||years<=0) return '—'; if(years>30) return '30+ yrs'; return years.toFixed(1)+' yrs'; }
+function pill(years,saving){
+  if(saving<=0) return '<span class="pill bad">no payback</span>';
+  if(years<=6) return '<span class="pill good">'+pb(years)+'</span>';
+  if(years<=10) return '<span class="pill warn">'+pb(years)+'</span>';
+  return '<span class="pill bad">'+pb(years)+'</span>';
+}
+
+// ---- build presets UI ----
+const pc=$("presets");
+Object.keys(PRESETS).forEach(name=>{
+  const b=document.createElement("span"); b.className="preset"; b.textContent=name;
+  b.onclick=()=>{loadPreset(name); run();}; pc.appendChild(b);
+});
+function toggleSolar(){
+  const none=$("solarStatus").value==="none";
+  $("exportWrap").style.display=none?"none":"";
+  $("solarHaveBlock").style.display=none?"none":"";
+  $("importLabel").textContent=none?"Total usage (kWh)":"Grid import (kWh)";
+  if(none) $("export").value=0;
+}
+function loadPreset(name){
+  const p=PRESETS[name];
+  for(const k of ["postcode","network","solarStatus","period","import","export","profile","solarKw","solarAge","addKw","ev","charge"])
+    if($(k)) $(k).value=p[k];
+  document.querySelectorAll('#goals .chip').forEach(c=>c.classList.toggle('on',p.goals.includes(c.dataset.g)));
+  applyRates();   // derive import/FiT from the preset's postcode
+  toggleSolar();  // show/hide solar fields for this preset
+}
+document.querySelectorAll('#goals .chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+$("postcode").addEventListener("change",applyRates);
+$("network").addEventListener("change",applyRates);
+$("solarStatus").addEventListener("change",toggleSolar);
+
+// ---- engine ----
+function run(){
+  const period=$("period").value, mult=period==="quarterly"?(1/3):1;
+  const impMo=(+$("import").value)*mult, expMo=(+$("export").value)*mult;
+  const importRate=(+$("importRate").value)/100, fit=(+$("fit").value)/100;
+  const profile=$("profile").value, ev=$("ev").value, charge=$("charge").value;
+  const solarKw=+$("solarKw").value;
+  const goals=[...document.querySelectorAll('#goals .chip.on')].map(c=>c.dataset.g);
+
+  const noSolar=$("solarStatus").value==="none";
+  const spread=Math.max(0,importRate-fit);
+  const eveFrac=CFG.eveningFrac[profile]||0.5;
+  const eveningDay=(impMo*eveFrac)/30;            // evening load (kWh/day)
+  const daytimeUseDay=(impMo*(1-eveFrac))/30;     // daytime load (kWh/day)
+  const existingSurplusDay=noSolar?0:expMo/30;    // current exported solar/day
+  const evNeedDay=(CFG.evAnnualKm/100*CFG.evKwhPer100)/365;
+  const evDaytime=ev!=="none" && charge==="daytime_home";
+  const options=[];
+
+  // --- SOLAR: install (if none) or upgrade (if have). Sets the surplus battery/EV can use. ---
+  let captureSurplusDay=existingSurplusDay;
+  if(noSolar){
+    const targetDay=daytimeUseDay+(evDaytime?evNeedDay:0);          // size to cover daytime load (+ EV if daytime)
+    const recSolarKw=Math.min(13.2,Math.max(3,Math.round((targetDay/CFG.genFactor)*2)/2));
+    const genDay=recSolarKw*CFG.genFactor;
+    const selfDay=Math.min(genDay,daytimeUseDay);                   // building daytime load it offsets
+    const expDay=genDay-selfDay;                                    // surplus → available to battery/EV
+    const sSave=selfDay*365*importRate + expDay*365*fit;
+    const sCost=recSolarKw*CFG.solarCostPerKw;
+    captureSurplusDay=expDay;
+    options.push({key:"solar",name:`Install solar (~${recSolarKw} kW)`,cost:sCost,saving:sSave,pbY:sSave>0?sCost/sSave:Infinity,first:true,
+      reason:`You have no solar yet — this is the foundation. A ~${recSolarKw} kW system generates ~${genDay.toFixed(1)} kWh/day; about ${selfDay.toFixed(1)} offsets daytime grid use at ${$("importRate").value}c, the rest exports at ${$("fit").value}c. Battery and EV charging only make sense once this is in.`});
+  } else {
+    const addKw=Math.max(0,+$("addKw").value);
+    const unmetDaytimeDay=Math.max(0,daytimeUseDay-existingSurplusDay);
+    const extraGenDay=addKw*CFG.genFactor;
+    const offsetDay=Math.min(extraGenDay,unmetDaytimeDay);
+    const exportedExtraDay=extraGenDay-offsetDay;
+    const solSaving=offsetDay*365*importRate + exportedExtraDay*365*fit;
+    const solCost=addKw*CFG.solarCostPerKw;
+    let solReason;
+    if(addKw<=0) solReason=`Set “panels to add” above to model a solar upgrade.`;
+    else if(unmetDaytimeDay<0.5) solReason=`You already export a surplus (~${existingSurplusDay.toFixed(1)} kWh/day), so your daytime load is covered — extra panels would mostly just export at ${$("fit").value}c. Adding panels isn't the move; use the surplus you already have (e.g. charge an EV) before generating more.`;
+    else solReason=`About ${offsetDay.toFixed(1)} of the ~${extraGenDay.toFixed(1)} kWh/day from ${addKw} kW of new panels would offset daytime grid use at ${$("importRate").value}c; the rest exports at ${$("fit").value}c. Worth it when generation — not storage — is your constraint.`;
+    options.push({key:"solar",name:`Add ${addKw} kW more panels`,cost:solCost,saving:solSaving,pbY:solSaving>0?solCost/solSaving:Infinity,reason:solReason});
+  }
+  const seqNote=noSolar?" (assuming you install the recommended solar first)":"";
+
+  // --- BATTERY ---
+  const shiftDay=Math.min(captureSurplusDay,eveningDay);
+  let recKwh=Math.min(Math.max(shiftDay*1.1,CFG.minBatteryKwh),28);
+  const crossesTaper=recKwh>14;
+  const batShiftDay=Math.min(shiftDay,recKwh*0.9);
+  const batSaving=batShiftDay*365*spread;
+  const batCost=recKwh*CFG.batteryGrossPerKwh - rebate(recKwh);
+  const batPB=batSaving>0?batCost/batSaving:Infinity;
+  let batReason=`Shifts about ${batShiftDay.toFixed(1)} kWh/day of cheap daytime solar to cover evening use (you have ~${eveningDay.toFixed(1)} kWh/day evening load and ~${captureSurplusDay.toFixed(1)} kWh/day daytime surplus${seqNote}).`;
+  if(eveningDay<3) batReason=`Your evening use is small (~${eveningDay.toFixed(1)} kWh/day), so a battery has little to shift — it can't save enough to pay back.`;
+  else if(shiftDay<0.5) batReason=`There's little daytime surplus to store${seqNote}, so a battery has nothing to shift yet.`;
+  if(crossesTaper && batSaving>0) batReason+=` Note: sizing past 14 kWh drops the rebate to 60% on the extra.`;
+  options.push({key:"battery",name:`Add a battery (~${recKwh.toFixed(0)} kWh)`,cost:batCost,saving:batSaving,pbY:batPB,reason:batReason,
+    extra: goals.includes("backup")?"Also gives blackout backup (a non-$ reason some people value).":null});
+
+  // --- EV DAYTIME CHARGING ---
+  if(ev!=="none"){
+    const chargeableDay=evDaytime?Math.min(captureSurplusDay,evNeedDay):0;
+    const evSaving=evDaytime? chargeableDay*365*spread : 0;
+    const evPB=evSaving>0?CFG.evChargerCost/evSaving:Infinity;
+    let evReason;
+    if(evDaytime) evReason=`Fill the car from daytime solar instead of the grid: ~${chargeableDay.toFixed(1)} kWh/day${seqNote} avoids buying at ${$("importRate").value}c — a ${(spread*100).toFixed(0)}c/kWh saving (the car needs ~${evNeedDay.toFixed(1)} kWh/day).`;
+    else if(charge==="night_home") evReason=`Charging overnight pulls from the grid, not your solar — a daytime charger saves nothing unless you shift charging to midday.`;
+    else evReason=`Charging away / on public chargers means your solar can't reach the car — no solar-vs-grid saving from a home charger.`;
+    options.push({key:"ev",name:`EV charger (charge on daytime solar)`,cost:CFG.evChargerCost,saving:evSaving,pbY:evPB,reason:evReason,
+      extra: (ev==="buying"?"You're about to buy an EV — set the charging window to daytime to capture this.":null)});
+  }
+
+  // --- DO NOTHING ---
+  options.push({key:"nothing",name:"Do nothing (for now)",cost:0,saving:0,pbY:Infinity,
+    reason:"No option pays back well enough yet. The honest answer: wait, and re-check if your usage, an EV, or tariffs change."});
+
+  // ---- rank ----
+  const doNothing=options.find(o=>o.key==="nothing");
+  const best=options.filter(o=>o.key!=="nothing" && o.saving>0).sort((a,b)=>a.pbY-b.pbY)[0];
+  let ordered, winnerKey;
+  if(noSolar){
+    // solar is the prerequisite: it leads unless it can't pay back; others sequence behind it
+    const solarOpt=options.find(o=>o.key==="solar");
+    const others=options.filter(o=>o.key!=="nothing" && o.key!=="solar").sort((a,b)=>a.pbY-b.pbY);
+    const recNothing=!(solarOpt.saving>0 && solarOpt.pbY<=12);
+    winnerKey=recNothing?"nothing":"solar";
+    ordered=recNothing?[doNothing,solarOpt,...others]:[solarOpt,...others,doNothing];
+  } else {
+    const viable=options.filter(o=>o.key!=="nothing" && o.saving>0).sort((a,b)=>a.pbY-b.pbY);
+    const dead=options.filter(o=>o.key!=="nothing" && o.saving<=0);
+    const recommendNothing=!best || best.pbY>12;
+    winnerKey=recommendNothing?"nothing":best.key;
+    ordered=recommendNothing?[doNothing,...viable,...dead]:[...viable,doNothing,...dead];
+  }
+
+  render(ordered,winnerKey,{eveningDay,surplusDay:captureSurplusDay,spread,best,goals,fit:+$("fit").value,importRate:+$("importRate").value,evNeedDay,daytimeUseDay,noSolar,ev});
+}
+
+function render(opts,winnerKey,ctx){
+  // headline
+  const win=opts.find(o=>o.key===winnerKey);
+  let hl="";
+  if(winnerKey==="nothing"){
+    hl=`<div class="headline"><div class="tag">Recommended next move</div>
+        <div class="big">🅗 Hold off — nothing pays back well enough yet</div>
+        <div class="why">This is exactly the answer a sales-driven site won't give you. ${ctx.best?("Closest option: "+ctx.best.name+" at "+pb(ctx.best.pbY)+"."):""}</div></div>`;
+  } else {
+    hl=`<div class="headline"><div class="tag">Recommended next move · ballpark</div>
+        <div class="big">✓ ${win.name}</div>
+        <div class="why">${win.reason}</div>
+        <div class="why" style="margin-top:6px;font-size:12px">Free estimate using typical rates for your postcode. Unlock below for a precise plan built on your exact tariff & usage.</div></div>`;
+  }
+  $("headline").innerHTML=hl;
+
+  // options
+  $("results").innerHTML=opts.map(o=>{
+    const isWin=o.key===winnerKey;
+    const nums = o.key==="nothing"
+      ? `<div class="nums"><div>Cost<b>$0</b></div><div>Saving<b>$0</b></div></div>`
+      : `<div class="nums">
+           <div>Est. cost<b>${fmt(o.cost)}</b></div>
+           <div>Saving/yr<b>${o.saving>0?fmt(o.saving):'—'}</b></div>
+           <div>Payback<b>${pb(o.pbY)}</b></div>
+         </div>`;
+    return `<div class="opt ${isWin?'win':''}">
+      <div class="top"><span class="name">${isWin?'★ ':''}${o.name}</span>
+        <span class="pb">${o.key==="nothing"?'<span class="pill warn">baseline</span>':pill(o.pbY,o.saving)}</span></div>
+      ${nums}
+      <div class="reason">${o.reason}${o.extra?(' <span style="color:var(--accent2)">'+o.extra+'</span>'):''}</div>
+    </div>`;
+  }).join('');
+
+  // assumptions
+  $("assume").innerHTML=`<div class="assume">
+    <b>What the engine assumed</b> (editable inputs above): evening grid load ≈ <code>${ctx.eveningDay.toFixed(1)} kWh/day</code>,
+    daytime solar surplus ≈ <code>${ctx.surplusDay.toFixed(1)} kWh/day</code>, import−FiT spread ≈ <code>${(ctx.spread*100).toFixed(0)}c/kWh</code>.
+    Battery ≈ $${CFG.batteryGrossPerKwh}/kWh gross less STC rebate; EV charger $${CFG.evChargerCost}; EV charging valued as solar-vs-grid (saves the import−FiT spread), car needs ~${(CFG.evAnnualKm/100*CFG.evKwhPer100/365).toFixed(1)} kWh/day. Solar upgrade $${CFG.solarCostPerKw}/kW @ ${CFG.genFactor} kWh/kW/day; new panels offset unmet daytime grid use (import rate), surplus exports at FiT.
+    These are deterministic rules of thumb — a real case would refine them.
+  </div>`;
+
+  // ---- free → paid boundary ----
+  window.LAST={opts,winnerKey,ctx};
+  if(!PAID){
+    $("report").innerHTML="";
+    $("paywall").innerHTML=`<div class="paywall">
+      <div class="lock">🔓 That's your free ballpark. Unlock your precise, personalised plan.</div>
+      <div class="blurb">Built on <i>your exact</i> tariff & usage (not typical averages): a scenario comparison (buy now vs wait, size A vs B), a payback chart, the rebates/rates that apply to your postcode, a downloadable PDF, plus the ability to tweak your inputs and re-run. No installer kickbacks steering it.</div>
+      <button onclick="purchase()">Unlock plan — A$29</button>
+    </div>`;
+  } else {
+    if(RUNS_LEFT>0){ RUNS_LEFT--; buildReport(); }
+    else { $("report").innerHTML=`<div class="report"><div class="free">Re-run limit reached</div><p>You've used all included regenerations for this purchase (a cap that keeps the cost — and our compute — sensible). Your last plan is still valid. <b>Top up 10 more re-runs — A$5.</b></p></div>`; }
+  }
+}
+
+const CHECKS={
+  solar:["Quote priced in $/kW and the STC solar discount shown as an upfront deduction","CEC-approved panels AND inverter (check both model numbers)","SAA-accredited installer; product + workmanship warranties in writing","Inverter size / export limit matches your network's rules","System sized to your daytime load — not oversized just to export at a few cents","Roof orientation & shading assessed (not just a desktop estimate)"],
+  battery:["CEC-listed battery model; installed to AS/NZS 5139","Sized to your evening load — don't pay for capacity past the 14 kWh 100%-rebate band without a reason","Federal rebate applied as an upfront STC discount on the quote (you don't claim it)","Warranty stated in cycles AND years; usable vs nominal kWh clarified","Backup capability confirmed if you want blackout cover","VPP participation optional — understand any lock-in"],
+  ev:["A smart charger (OCPP) that can schedule to midday so it soaks up solar","'Solar-following' / green-charging mode if you want it automatic","Switchboard / supply capacity checked for the charger load","Install cost itemised separately from the unit"],
+  nothing:["Re-check if you get an EV (especially daytime charging)","Re-check if your usage shifts (more evening load makes a battery work harder)","Watch your tariff & feed-in rate at renewal","The battery rebate steps down ~6-monthly — revisit before it shrinks"]
+};
+
+// ---- paid state ----
+let PAID=false, RUNS_LEFT=10;
+function purchase(){ PAID=true; RUNS_LEFT=10; buildReport(); $("report").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+
+// scenario rows for the recommended option (deterministic what-ifs)
+function scenarios(L){
+  const c=L.ctx, win=L.opts.find(o=>o.key===L.winnerKey), rows=[];
+  const row=(name,cost,save)=>({name,cost,save,pb:save>0?cost/save:Infinity});
+  if(L.winnerKey==="battery"){
+    rows.push(row("As recommended now",win.cost,win.saving));
+    rows.push(row("Wait 12 months (rebate ~15% lower)",win.cost+ (win.cost>0? (rebate(8)*0.15):0)+ Math.max(0,win.cost*0)+ (0), win.saving)); // approx: rebate shrinks → higher net cost
+    rows.push(row("Bigger: +3 kWh capacity",win.cost+3*CFG.batteryGrossPerKwh-(rebate(11)-rebate(8)),win.saving)); // more capacity, similar usable saving (surplus-limited)
+  } else if(L.winnerKey==="ev"){
+    rows.push(row("Charge on daytime solar (recommended)",win.cost,win.saving));
+    rows.push(row("If you charged overnight instead",win.cost,0));
+  } else if(L.winnerKey==="solar"){
+    rows.push(row("As recommended",win.cost,win.saving));
+    rows.push(row("Bigger: +3 kW",win.cost+3*CFG.solarCostPerKw,win.saving+3*CFG.genFactor*0.4*365*(c.fit/100))); // extra mostly exported
+  } else {
+    rows.push(row("Do nothing (recommended now)",0,0));
+    rows.push(row("If you add an EV charging in the day",CFG.evChargerCost,Math.min(c.surplusDay,c.evNeedDay)*365*c.spread));
+  }
+  return rows;
+}
+function scenarioTable(rows){
+  return `<table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0">
+    <tr style="color:var(--muted);text-align:left"><th style="padding:4px 0">Scenario</th><th>Cost</th><th>Saving/yr</th><th>Payback</th></tr>
+    ${rows.map(r=>`<tr style="border-top:1px solid var(--line)"><td style="padding:5px 0">${r.name}</td><td>${r.cost?fmt(r.cost):'$0'}</td><td>${r.save>0?fmt(r.save):'—'}</td><td>${pb(r.pb)}</td></tr>`).join('')}
+  </table>`;
+}
+// simple cumulative-cashflow SVG for the recommended option
+function cashflowSVG(cost,savePerYr){
+  if(!(savePerYr>0&&cost>0)) return `<p class="kb">No payback to chart for this option.</p>`;
+  const yrs=15, W=460, H=150, padL=44, padB=22, padT=10;
+  const net=y=> -cost + savePerYr*y;
+  const lo=-cost, hi=net(yrs), span=hi-lo||1;
+  const x=y=>padL+(y/yrs)*(W-padL-6);
+  const yv=v=>padT+(1-(v-lo)/span)*(H-padT-padB);
+  let pts=[]; for(let y=0;y<=yrs;y++) pts.push(`${x(y).toFixed(1)},${yv(net(y)).toFixed(1)}`);
+  const be=cost/savePerYr; // break-even year
+  const zeroY=yv(0);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;background:var(--panel);border-radius:8px">
+    <line x1="${padL}" y1="${zeroY}" x2="${W-6}" y2="${zeroY}" stroke="var(--line)"/>
+    <polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.join(' ')}"/>
+    ${be<=yrs?`<line x1="${x(be)}" y1="${padT}" x2="${x(be)}" y2="${H-padB}" stroke="var(--good)" stroke-dasharray="3 3"/><text x="${x(be)+3}" y="${padT+10}" fill="var(--good)" font-size="11">break-even ~${be.toFixed(1)}y</text>`:''}
+    <text x="4" y="${zeroY-3}" fill="var(--muted)" font-size="10">$0</text>
+    <text x="${padL}" y="${H-6}" fill="var(--muted)" font-size="10">year 0</text>
+    <text x="${W-30}" y="${H-6}" fill="var(--muted)" font-size="10">yr ${yrs}</text>
+    <text x="${W-90}" y="${yv(hi)+10}" fill="var(--accent)" font-size="11">+${fmt(hi)} by yr ${yrs}</text>
+  </svg>`;
+}
+function exportData(){
+  const L=window.LAST; if(!L) return;
+  const data={ generated:new Date().toISOString(), inputs:{
+    postcode:$("postcode").value, state:deriveState($("postcode").value), solarStatus:$("solarStatus").value,
+    importRate_c:+$("importRate").value, fit_c:+$("fit").value, period:$("period").value,
+    usage_kwh:+$("import").value, export_kwh:+$("export").value, profile:$("profile").value,
+    solar_kw:+$("solarKw").value, addKw:+$("addKw").value, ev:$("ev").value, charge:$("charge").value },
+    recommendation:L.winnerKey, options:L.opts.map(o=>({option:o.key,name:o.name,cost:o.cost,saving_yr:o.saving,payback_yr:isFinite(o.pbY)?+o.pbY.toFixed(1):null})) };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="my-solar-ev-plan.json"; a.click();
+}
+function buildReport(){
+  const L=window.LAST; if(!L) return;
+  const win=L.opts.find(o=>o.key===L.winnerKey);
+  const st=deriveState($("postcode").value), imp=$("importRate").value, fit=$("fit").value;
+  const checks=(CHECKS[L.winnerKey]||[]).map(c=>`<li>${c}</li>`).join("");
+  const numbers = L.winnerKey==="nothing"
+    ? `<p><b>Recommended now:</b> hold off — no option pays back well enough yet.</p>`
+    : `<p><b>${win.name}</b> — est. cost ${fmt(win.cost)}, saving ~${fmt(win.saving)}/yr, payback ${pb(win.pbY)}.</p>`;
+  $("paywall").innerHTML=`<div class="paywall"><div class="lock">✓ Unlocked — your precise plan (demo, no payment taken)</div>
+    <div class="blurb">Re-runs left: <b>${RUNS_LEFT}</b> (tweak inputs above and press “Work out…” to regenerate). <button onclick="exportData()" style="margin:6px 6px 0 0">Export data (JSON)</button><button onclick="window.print()" style="margin-top:6px">Download PDF</button></div></div>`;
+  $("report").innerHTML=`<div class="report" id="reportCard">
+    <div class="free">Your personalised plan — ${st}, postcode ${$("postcode").value}</div>
+    <h3>${win.name}</h3>
+    ${numbers}
+    <p>${win.reason}</p>
+    <h4>Scenario comparison</h4>
+    ${scenarioTable(scenarios(L))}
+    <h4>Payback over time (recommended option)</h4>
+    ${cashflowSVG(win.cost,win.saving)}
+    <h4>What to ask / check before you commit</h4>
+    <ul>${checks}</ul>
+    <h4>The rebates & rates we applied for you</h4>
+    <p class="kb">Federal battery rebate: ~A$252 per usable kWh (point-of-sale STC discount), tapering above 14 kWh and stepping down ~6-monthly. Your state (${st}): ~${imp}c/kWh import, ~${fit}c/kWh feed-in — the ${Math.max(0,(+imp-+fit)).toFixed(0)}c gap is what every self-consumed kWh is worth. Kept current in the knowledge base, not hard-coded — the bit a generic chatbot gets wrong.</p>
+    <div class="opt2">Optional: want a local expert to sanity-check this and connect you to a vetted installer? Add a 1:1 review — A$99. (Optional; the plan stands on its own.)</div>
+  </div>`;
+}
+
+// run founder's case on load
+loadPreset("Mihajlo (QLD)"); run();
+</script>
+</body>
+</html>
