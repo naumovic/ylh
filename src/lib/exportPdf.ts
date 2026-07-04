@@ -10,6 +10,17 @@ const fmt = (n: number) => '$' + Math.round(n).toLocaleString();
 const pb = (y: number) => (!isFinite(y) || y <= 0 ? '—' : y.toFixed(1) + ' yrs');
 
 export function exportPdf(plan: Plan): void {
+  const doc = buildPlanPdf(plan);
+  doc.save(`your-local-hero-plan-${plan.postcode}-${plan.generatedAt.slice(0, 10)}.pdf`);
+}
+
+/** The plan PDF as raw base64 (no data: prefix) — for emailing via /api/unlock. */
+export function planPdfBase64(plan: Plan): string {
+  const uri = buildPlanPdf(plan).output('datauristring');
+  return uri.slice(uri.indexOf(',') + 1);
+}
+
+function buildPlanPdf(plan: Plan): jsPDF {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pw = doc.internal.pageSize.getWidth();
   const margin = 18;
@@ -221,5 +232,5 @@ export function exportPdf(plan: Plan): void {
   const discLines = doc.splitTextToSize(plan.disclaimer, cw);
   doc.text(discLines, margin, cy);
 
-  doc.save(`your-local-hero-plan-${plan.postcode}-${plan.generatedAt.slice(0, 10)}.pdf`);
+  return doc;
 }

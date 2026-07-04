@@ -28,16 +28,17 @@ export function LockedPaybackChart({ onUnlock }: Props) {
       {/* Unlock overlay */}
       <div className="absolute inset-0 rounded-xl bg-white/40 flex flex-col items-center justify-center text-center gap-2 px-6">
         <div className="text-2xl" aria-hidden="true">🔒</div>
-        <div className="font-bold text-sm text-navy-900">Unlock your full payback timeline</div>
+        <div className="font-bold text-sm text-navy-900">Unlock your full plan, free</div>
         <p className="text-xs text-muted max-w-xs">
-          See the exact year your investment breaks even, charted for your place.
+          See the exact year your investment breaks even, plus scenarios and a PDF. Free while we&apos;re
+          in early access, just tell us where to send it.
         </p>
         <button
           onClick={onUnlock}
           data-testid="unlock-chart"
           className="mt-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-navy-900 font-bold text-sm px-4 py-2"
         >
-          Unlock full timeline
+          Unlock my plan (free)
         </button>
       </div>
     </div>
