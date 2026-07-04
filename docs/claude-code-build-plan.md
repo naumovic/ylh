@@ -340,9 +340,9 @@ A **Temporal scheduled workflow** gathers accreditation (CEC/SAA), ABN status, a
 2. **React PWA — free tier** — installable shell, intake form, ballpark ranked answer + charts, all client-side from `core`. The national funnel.
 3. **Paid pack generation (code-only)** — precise inputs → scenario table, payback chart, dated rebates/rates, **client-side PDF** (jsPDF/pdfmake), JSON export. No cap.
 4. **Stripe Checkout + discount codes** — one-off A$29 product; **promotion codes** (`FEEDBACK…`, capped, expiring) configured in Stripe for manual sharing. Optional A$99 human-review as a second product.
-5. **Serverless verify function** — stateless **Vercel Function** (or Cloudflare Worker / Cloud Function): confirm the Stripe session is paid → return a short-lived **signed unlock token**; PWA renders the paid pack on a valid token. (For hard gating, generate the pack inside this function post-payment.)
+5. **Stateless verify endpoint** — a small **Node web service on Render (Express/Hono)** serving `dist/` + `/api/verify`: confirm the Stripe session is paid → return a short-lived **signed unlock token**; PWA renders the paid pack on a valid token. (For hard gating, generate the pack inside this endpoint post-payment.)
 6. **Analytics + waitlist fallback** — `unlock_clicked` / `purchased` events (PostHog/GA4); non-buyers see a waitlist CTA. Add **privacy policy + terms + refund** pages.
-7. **Deploy on Vercel** — the PWA **and** the verify function on one platform; point `yourlocalhero.com.au` here, redirect `.app`. Measure **free → paid conversion and actual revenue** (seed §9). **~US$20/mo (Vercel Pro — commercial)** or ~$0 on Cloudflare Pages/Firebase, + Stripe per sale (see `phase1-running-costs.md`).
+7. **Deploy on Render** — the PWA **and** the verify endpoint on one service (auto-deploys from `main`); point `yourlocalhero.com.au` here, redirect `.app`. Measure **free → paid conversion and actual revenue** (seed §9). **~US$20/mo (Render web service — commercial use fine)** or ~$0 on Cloudflare Pages/Firebase, + Stripe per sale (see `phase1-running-costs.md`).
 
 **Defer until a feature demands state:** GraphQL API + Postgres (accounts/history/audit), Temporal (emailed PDFs, human-review workflow, KB-freshness automation), Redis (caching at volume), GKE (scale), bill auto-reader, optional LLM narrative-polish pass.
 

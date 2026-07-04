@@ -37,7 +37,7 @@
 
 ## 2. Recommended pipeline — Claude Code does the coding
 
-The goal: a tight loop where **Claude Code writes code + tests on a branch, Vercel gives you a live preview URL, you eyeball it, merge.**
+The goal: a tight loop where **Claude Code writes code + tests on a branch, you eyeball it locally (`npm run dev`) or on the Render deploy, merge.**
 
 **Stack (all Claude-Code-friendly, all TypeScript):**
 - **Vite + React + TypeScript** — fast dev server, simple, great PWA support.
@@ -45,14 +45,14 @@ The goal: a tight loop where **Claude Code writes code + tests on a branch, Verc
 - **Vitest** — unit tests for the deterministic `core` engine (the part that *must* be correct).
 - **jsPDF** (or `@react-pdf/renderer`) — client-side PDF for the paid pack.
 - **Stripe Checkout** + **Stripe CLI** (local webhook/verify testing) + **PostHog** (funnel analytics).
-- **Vercel** — hosting for the PWA **and** the `api/verify` function.
+- **Render** — hosting for the PWA (a static site today; a single Node web service serving `dist/` + `/api/verify` from Task 4).
 
 **Repo + flow:**
 1. **GitHub repo** (push `./app`). This is where Claude Code works.
-2. **Connect the repo to Vercel** — every branch/PR gets a **preview deployment** (a real URL); `main` auto-deploys to production. This is the magic with Claude Code: you get a clickable preview of every change.
+2. **Connect the repo to Render** — push to `main` auto-deploys to production. Render *preview environments* per PR are a paid add-on (optional); otherwise eyeball changes locally with `npm run dev` before merge.
 3. **`CLAUDE.md` at the app root** (included in the scaffold) gives Claude Code the project context, conventions, and guardrails — most importantly: *the deterministic `core` is the source of truth; UI/AI never change a number; every `core` change needs a passing test.*
-4. **Loop:** describe a feature → Claude Code implements it + tests on a branch → open PR → Vercel preview → you review the diff + click the preview → merge → production. Keep `core` behind Vitest so regressions are caught automatically.
-5. **Secrets** (Stripe keys, signing secret) live in **Vercel env vars**, never in the repo. Use Stripe **test mode** until launch.
+4. **Loop:** describe a feature → Claude Code implements it + tests on a branch → open PR → review the diff + eyeball locally (`npm run dev`) → merge to `main` → Render auto-deploys. Keep `core` behind Vitest so regressions are caught automatically.
+5. **Secrets** (Stripe keys, signing secret) live in **Render env vars** (Service → Environment), never in the repo. Use Stripe **test mode** until launch.
 
 **Quality gates (wire into CI / pre-merge):**
 - `vitest run` green (core math correct — the founder + state-sensitivity cases are in the scaffold).
@@ -71,7 +71,7 @@ The goal: a tight loop where **Claude Code writes code + tests on a branch, Verc
 
 ## 3. Why this pipeline fits *this* product
 - The **deterministic core** is the ideal Claude-Code target: pure functions, fully testable, no ambiguity — Claude writes it and tests prove it.
-- **Preview deploys** turn "is the UI right?" into a click, which is exactly the feedback Claude Code can't self-assess.
-- **No backend to speak of** (one stateless function) means little infra for Claude Code to get wrong, and ~US$20/mo all-in on Vercel Pro.
+- **Fast local preview + auto-deploy on `main`** turn "is the UI right?" into a quick check, which is exactly the feedback Claude Code can't self-assess.
+- **No backend to speak of** (one stateless endpoint) means little infra for Claude Code to get wrong, and ~US$20/mo all-in on a Render web service.
 
 *This is a plan, not legal/financial advice. Brand mark and exact palette are starting points — adjust to taste.*

@@ -6,8 +6,8 @@
 
 ## TL;DR
 
-- **Chosen path: Scenario C — a production-ready, *code-only*, real-paywall tool for ~US$20/month on Vercel** (or ~$0 on Cloudflare/Firebase). Because the plan is generated deterministically (no LLM) and Stripe holds payments + discount codes, the only real fixed cost is hosting. Gives a *real* willingness-to-pay signal (people actually paying, not just clicking).
-- **Hosting note:** you're already on Vercel — keep it, but a monetised app needs **Vercel Pro (~US$20/mo)** since the free Hobby tier is non-commercial. It hosts the PWA *and* the Stripe-verify function, so no GCP/Firebase needed for the MVP.
+- **Chosen path: Scenario C — a production-ready, *code-only*, real-paywall tool for ~US$20/month on Render** (or ~$0 on Cloudflare/Firebase). Because the plan is generated deterministically (no LLM) and Stripe holds payments + discount codes, the only real fixed cost is hosting. Gives a *real* willingness-to-pay signal (people actually paying, not just clicking).
+- **Hosting note:** the app is deployed on **Render** (auto-deploys from `main`). A Render web-service starter tier (~US$20/mo, commercial use fine) hosts the PWA *and* the Stripe-verify endpoint, so no GCP/Firebase needed for the MVP. (Today it runs as a Render static site; the verify endpoint arrives in Task 4 as a single Node web service.)
 - **No database, no LLM, no Temporal/Redis needed** for the paid flow: static PWA + Stripe Checkout + one stateless serverless verify function. **Discount codes** are native Stripe promotion codes (config, not build).
 - **The big costs are things you should NOT turn on yet:** Temporal Cloud (~US$100/mo min), Memorystore Redis (~US$16–36/mo), Postgres, GKE — defer each until a stateful feature actually needs it.
 - **The real per-sale cost isn't compute — it's Stripe:** ~**A$0.89 on a A$29 sale** (~3%).
@@ -73,16 +73,16 @@ Unlock → take payment (Stripe) → generate the plan with the LLM → deliver.
 
 | Item | Choice | ~Monthly |
 |---|---|---|
-| Hosting (PWA **+** verify function) | **Vercel Pro** — already set up; hosts the PWA *and* the serverless Stripe-verify function in one place | **~US$20** (commercial → Pro required; incl. $20 usage credit) |
+| Hosting (PWA **+** verify endpoint) | **Render** — auto-deploys from `main`; a web-service starter tier hosts the PWA *and* the Stripe-verify endpoint in one place | **~US$20** (commercial use fine) |
 | — *or* ~$0 alternative | **Cloudflare Pages / Firebase Hosting** (free tiers permit commercial) + free Workers/Functions | **$0** |
 | Plan + PDF generation | **code-only, client-side** (engine + bundled KB; jsPDF/print) | **$0** |
 | Payments + discount codes | **Stripe Checkout** + native **promotion codes** (Stripe holds it all) | $0 fixed (per-sale fee only) |
 | Database / LLM / Temporal / Redis | **none needed** | **$0** |
 | Analytics + waitlist fallback | PostHog/GA4 + Tally/Typeform (free tiers) | **$0** |
 | Domains (`.com.au` canonical, `.app` redirect) | amortised | ~**$2–3** |
-| **Total** | | **~US$20/mo on Vercel** (or ~**$0** on Cloudflare/Firebase) **+ Stripe per sale** |
+| **Total** | | **~US$20/mo on Render** (or ~**$0** on Cloudflare/Firebase) **+ Stripe per sale** |
 
-**Why this is the pick:** it's a *real* paywall (true willingness-to-pay signal, not just a click), yet near-free because deterministic generation means **no tokens, no DB, no orchestration**. The hosting line is the only real fixed cost, and it's a choice: **~US$20/mo Vercel Pro** (smoothest, already set up — note: Vercel's free Hobby tier is **non-commercial only**, and you're taking payments) **or ~$0** on a host whose free tier allows commercial use (Cloudflare Pages / Firebase). Discount codes onboard feedback users at A$0–14 manually. Marginal cost per sale is just **Stripe (~A$0.89 per A$29)**.
+**Why this is the pick:** it's a *real* paywall (true willingness-to-pay signal, not just a click), yet near-free because deterministic generation means **no tokens, no DB, no orchestration**. The hosting line is the only real fixed cost, and it's a choice: **~US$20/mo on a Render web service** (smoothest, already set up; commercial use is fine) **or ~$0** on a host whose free tier allows commercial use (Cloudflare Pages / Firebase). Discount codes onboard feedback users at A$0–14 manually. Marginal cost per sale is just **Stripe (~A$0.89 per A$29)**.
 
 > Hardening note: a pure client-side paywall is "soft" (JS is inspectable). The serverless verify function stops casual bypass; if you ever need hard protection, **generate the pack inside that function after payment** — still no LLM, no DB.
 

@@ -10,7 +10,13 @@ Independent solar / EV / battery advisor for Australian homes. **National tool, 
 5. **Money:** dollars (numbers) in the engine; integer cents only if/when persisted.
 
 ## Stack
-Vite + React + TypeScript · Tailwind (brand tokens in `tailwind.config.ts`) · shadcn/ui (add as needed) · Vitest · client-side PDF (jsPDF / @react-pdf) · Stripe Checkout + `api/verify` · PostHog · deploy on Vercel (PWA + function).
+Vite + React + TypeScript · Tailwind (brand tokens in `tailwind.config.ts`) · shadcn/ui (add as needed) · Vitest · client-side PDF (jsPDF / @react-pdf) · Stripe Checkout + `api/verify` · PostHog · deployed on **Render** (auto-deploys from `main`).
+
+## Deploy (Render)
+- Hosting is **Render.com**, connected to the GitHub repo. Push to `main` → auto-deploy. Preview environments per PR are a paid Render add-on (optional); otherwise eyeball locally with `npm run dev` before merge.
+- Today the app ships as a **static site**: build `npm run build`, publish directory `dist/`.
+- **Task 4:** `@vercel/node` functions don't run on Render, so `api/verify.ts` becomes a single small **Node web service** (Express/Hono) that serves `dist/` *and* `/api/verify` (later `/api/create-checkout`), with a `render.yaml`. One service, still stateless, no DB.
+- **Env vars** (Render dashboard → Service → Environment, never in the repo): `STRIPE_SECRET_KEY`, `UNLOCK_JWT_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY`, `VITE_POSTHOG_KEY`.
 
 ## Design
 Trustworthy & clean, **light** theme. Amber `#F2A900` accent on deep navy `#14304B`. Inter, tabular numerals for money. Recommended option gets the amber accent; "do nothing" is a normal card. Plain, honest, calm copy — say the hard thing without hedging, never salesy.

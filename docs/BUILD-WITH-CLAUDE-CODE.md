@@ -5,7 +5,7 @@ A step-by-step guide to take the `app/` scaffold from this folder into your WSL2
 ---
 
 ## 0. What you're building (one line)
-A national, code-only, real-paywall PWA: free ballpark answer for everyone → A$29 unlock for a precise, code-generated plan (scenarios + payback chart + PDF). No LLM, no DB; one stateless Stripe-verify function. Deployed on Vercel. Full strategy: `solar-ev-battery-advisor-seed.md`, `claude-code-build-plan.md`, `frontend-and-pipeline.md`, `phase1-running-costs.md`.
+A national, code-only, real-paywall PWA: free ballpark answer for everyone → A$29 unlock for a precise, code-generated plan (scenarios + payback chart + PDF). No LLM, no DB; one stateless Stripe-verify endpoint. Deployed on Render (auto-deploys from `main`). Full strategy: `solar-ev-battery-advisor-seed.md`, `claude-code-build-plan.md`, `frontend-and-pipeline.md`, `phase1-running-costs.md`.
 
 ---
 
@@ -110,7 +110,7 @@ If `npm test` is green and the dev page shows ranked options, your foundation is
 
 ---
 
-## 4. Git + GitHub + Vercel (the preview-deploy loop)
+## 4. Git + GitHub + Render (the auto-deploy loop)
 
 ```bash
 cd ~/projects/yourlocalhero
@@ -118,16 +118,16 @@ git init && git add -A && git commit -m "scaffold: core engine + PWA shell + ver
 gh repo create yourlocalhero --private --source=. --push   # or create on github.com and push
 ```
 
-Connect the repo to **Vercel** (vercel.com → Add New → Project → import the repo):
-- Framework preset: **Vite**. Root directory: repo root. Build: `npm run build`. Output: `dist`.
-- This gives you a **preview deployment URL on every PR** and production on `main` — the core of the workflow.
-- Plan: **Vercel Pro (~US$20/mo)** because you'll take payments (the free Hobby tier is non-commercial).
+Connect the repo to **Render** (render.com → New → Static Site → connect the repo):
+- Build command: `npm run build`. Publish directory: `dist`. (Optional SPA rewrite: `/*` → `/index.html`.)
+- **Push to `main` → auto-deploy to production** — the core of the workflow. Render *preview environments* per PR are a paid add-on (optional); otherwise eyeball locally with `npm run dev` before merge.
+- Commercial use is fine on Render; the web-service starter tier is comparable to the old Vercel Pro (~US$20/mo). (When Task 4 adds `api/verify`, this static site becomes a single Node web service — see Task 4.)
 
 ---
 
 ## 5. Secrets / environment variables
 
-Local dev → `~/projects/yourlocalhero/.env.local` (git-ignored). Production → Vercel project → Settings → Environment Variables. Same names:
+Local dev → `~/projects/yourlocalhero/.env.local` (git-ignored). Production → Render dashboard → Service → Environment. Same names:
 
 | Var | Where | What |
 |---|---|---|
@@ -142,7 +142,7 @@ Use **Stripe test mode** until launch, and the **Stripe CLI** (`stripe listen`) 
 
 ## 6. Build it — the Claude Code task sequence
 
-Feed these to Claude Code **one at a time**. After each: review the diff, check the Vercel preview, ensure `npm test` + `npm run typecheck` are green, then merge and move on. Every task assumes the `CLAUDE.md` rules (core is the source of truth; UI never recomputes numbers; "do nothing" stays first-class; every core change needs a test).
+Feed these to Claude Code **one at a time**. After each: review the diff, eyeball it locally with `npm run dev` (or the Render deploy once merged), ensure `npm test` + `npm run typecheck` are green, then merge and move on. Every task assumes the `CLAUDE.md` rules (core is the source of truth; UI never recomputes numbers; "do nothing" stays first-class; every core change needs a test).
 
 **Task 1 — Orient (no code changes)**
 ```
@@ -181,15 +181,17 @@ Acceptance: with unlocked=true the plan renders and downloads a clean, branded P
 figure traces to core/report; re-running with new inputs regenerates instantly.
 ```
 
-**Task 4 — Stripe Checkout + the stateless verify**
+**Task 4 — Stripe Checkout + the stateless verify (on Render)**
 ```
-Wire real payment, no database. Add stripe, jsonwebtoken, @vercel/node. Create a Stripe
-Checkout flow for a A$29 one-off in TEST mode with promotion codes enabled
-(allow_promotion_codes: true). Unlock click → create a Checkout Session (a small
-api/create-checkout function, or a Stripe Payment Link) → redirect → on return, call the
-existing api/verify with session_id → on {ok:true} store the signed token in memory and set
-unlocked=true. Document the env vars (STRIPE_SECRET_KEY, UNLOCK_JWT_SECRET,
-VITE_STRIPE_PUBLISHABLE_KEY). Add Stripe CLI instructions for local testing.
+Wire real payment, no database. Because Render runs a Node process (not @vercel/node
+serverless functions), build a single small Node web service (Express or Hono) that serves
+the built dist/ statics AND the API (/api/verify, /api/create-checkout); add a render.yaml.
+Add stripe + jsonwebtoken. Create a Stripe Checkout flow for a A$29 one-off in TEST mode
+with promotion codes enabled (allow_promotion_codes: true). Unlock click → create a Checkout
+Session (or a Stripe Payment Link) → redirect → on return, call /api/verify with session_id →
+on {ok:true} store the signed token in memory and set unlocked=true. Document the env vars
+(STRIPE_SECRET_KEY, UNLOCK_JWT_SECRET, VITE_STRIPE_PUBLISHABLE_KEY). Add Stripe CLI
+instructions for local testing. One service, still stateless, no DB.
 Acceptance: a Stripe test-card payment unlocks the plan; a promotion code (e.g. FEEDBACK100)
 yields a free unlock; reloading without a valid token re-locks.
 ```
@@ -216,7 +218,7 @@ run Lighthouse. Acceptance: installs as an app; Lighthouse PWA installable and a
 Prep for launch: ensure `npm run build` is clean, env vars are documented in README, Stripe
 switches to live mode behind an env flag, and do a final copy pass — plain, honest, calm,
 never salesy; "do nothing" stays a proud first-class answer. List anything I must do manually
-(Vercel env, domain, Stripe live keys, Stripe promotion codes for feedback users).
+(Render env, domain, Stripe live keys, Stripe promotion codes for feedback users).
 ```
 
 ---
@@ -224,7 +226,7 @@ never salesy; "do nothing" stays a proud first-class answer. List anything I mus
 ## 7. The working loop (and the guardrails that keep it safe)
 
 1. Paste one task → Claude Code implements it **on a branch** and writes/updates tests.
-2. `git`-review the diff; open a PR (`gh pr create`); click the **Vercel preview URL** to eyeball the real UI.
+2. `git`-review the diff; open a PR (`gh pr create`); eyeball the real UI locally with `npm run dev` (or the Render deploy once merged to `main`).
 3. Confirm `npm test` + `npm run typecheck` are green (wire these as required GitHub checks).
 4. Merge → production. Next task.
 
@@ -234,8 +236,8 @@ never salesy; "do nothing" stays a proud first-class answer. List anything I mus
 
 ## 8. Go-live checklist
 - [ ] `npm run build` clean; tests + typecheck green in CI.
-- [ ] Vercel project on **Pro**, env vars set (live Stripe + JWT secret + PostHog).
-- [ ] Domain: **yourlocalhero.com.au** added as canonical; **yourlocalhero.app** 301-redirects to it (Vercel → Domains).
+- [ ] Render service live, env vars set (live Stripe + JWT secret + PostHog).
+- [ ] Domain: **yourlocalhero.com.au** added as canonical; **yourlocalhero.app** 301-redirects to it (Render → Settings → Custom Domains).
 - [ ] Stripe in **live** mode; A$29 product created; **promotion codes** created (e.g. `FEEDBACK`, capped + expiring) for early users.
 - [ ] Privacy / terms / refund pages live; PostHog receiving events.
 - [ ] Test a real card end-to-end (then refund yourself).

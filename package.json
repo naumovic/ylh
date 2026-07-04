@@ -30,5 +30,5 @@
     "vite-plugin-pwa": "^0.20.1",
     "vitest": "^2.0.5"
   },
-  "comment": "Add when wiring features: jspdf (client PDF), stripe + @vercel/node (api/verify), posthog-js (analytics). shadcn/ui can be initialised once Tailwind is set up."
+  "comment": "Add when wiring features: jspdf (client PDF), stripe + jsonwebtoken + express/hono (api/verify as a Render Node web service, Task 4), posthog-js (analytics). shadcn/ui can be initialised once Tailwind is set up."
 }
