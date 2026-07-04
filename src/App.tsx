@@ -1,44 +1,23 @@
 import { useCallback, useMemo, useState } from 'react';
 import { recommend } from './core/engine.ts';
-import { ratesFor } from './core/config.ts';
-import { scenarios, cashflow } from './core/report.ts';
+import { scenarios, cashflow, buildPlan } from './core/report.ts';
 import type { Intake } from './core/types.ts';
-import { IntakeForm } from './components/IntakeForm.tsx';
+import { Wizard } from './components/Wizard.tsx';
+import { RefinePanel } from './components/RefinePanel.tsx';
 import { ResultPanel } from './components/ResultPanel.tsx';
 import { ScenarioTable } from './components/ScenarioTable.tsx';
 import { PaybackChart } from './components/PaybackChart.tsx';
-
-const FOUNDER_DEFAULTS: Intake = (() => {
-  const r = ratesFor('4000');
-  return {
-    postcode: '4000',
-    state: r.state,
-    importRateCents: r.importCents,
-    fitCents: r.fitCents,
-    solarStatus: 'have',
-    period: 'monthly',
-    usageKwh: 200,
-    exportKwh: 400,
-    usageProfile: 'day_heavy',
-    solarKw: 6.6,
-    addKw: 3,
-    ev: 'buying',
-    charge: 'daytime_home',
-    goals: ['bill_savings'],
-  };
-})();
+import { PlanView } from './components/PlanView.tsx';
+import { exportPdf } from './lib/exportPdf.ts';
+import { exportJson } from './lib/exportJson.ts';
 
 export function App() {
-  const [intake, setIntake] = useState<Intake>(FOUNDER_DEFAULTS);
+  // null until the wizard is complete — the wizard is the entry point.
+  const [intake, setIntake] = useState<Intake | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
 
-  const handleChange = useCallback((next: Intake) => {
-    setIntake(next);
-  }, []);
-
-  const rec = useMemo(() => recommend(intake), [intake]);
-  const scenarioRows = useMemo(() => scenarios(rec), [rec]);
-  const win = rec.options.find((o) => o.key === rec.winner)!;
-  const points = useMemo(() => cashflow(win.cost, win.savingPerYear), [win.cost, win.savingPerYear]);
+  const handleRefine = useCallback((next: Intake) => setIntake(next), []);
+  const restart = useCallback(() => setIntake(null), []);
 
   return (
     <div className="min-h-full">
@@ -51,25 +30,98 @@ export function App() {
               Honest solar, EV &amp; battery advice — even if the answer is &quot;do nothing&quot;.
             </div>
           </div>
+          {/* Dev toggle — remove when Stripe is wired (Task 4) */}
+          <label className="ml-auto flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none" data-testid="dev-toggle">
+            <input
+              type="checkbox"
+              checked={unlocked}
+              onChange={(e) => setUnlocked(e.target.checked)}
+              className="accent-amber-500"
+            />
+            Unlocked (dev)
+          </label>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 py-6 grid gap-5 md:grid-cols-[340px_1fr]">
-        <IntakeForm initial={FOUNDER_DEFAULTS} onChange={handleChange} />
+      <main className="mx-auto max-w-3xl px-5 py-8">
+        {intake === null ? (
+          <>
+            <div className="text-center mb-8 max-w-xl mx-auto">
+              <h1 className="text-2xl font-bold text-navy-900">Should you get solar, a battery, or an EV charger?</h1>
+              <p className="text-sm text-muted mt-2">
+                Three quick steps. We&apos;ll give you a straight, honest ballpark — even if the answer is &quot;do nothing&quot;.
+              </p>
+            </div>
+            <Wizard onComplete={setIntake} />
+          </>
+        ) : (
+          <Result
+            intake={intake}
+            unlocked={unlocked}
+            onRefine={handleRefine}
+            onRestart={restart}
+            onUnlock={() => setUnlocked(true)}
+          />
+        )}
+      </main>
+    </div>
+  );
+}
 
-        <section>
+interface ResultProps {
+  intake: Intake;
+  unlocked: boolean;
+  onRefine: (next: Intake) => void;
+  onRestart: () => void;
+  onUnlock: () => void;
+}
+
+function Result({ intake, unlocked, onRefine, onRestart, onUnlock }: ResultProps) {
+  const rec = useMemo(() => recommend(intake), [intake]);
+  const plan = useMemo(() => buildPlan(rec, intake), [rec, intake]);
+
+  const scenarioRows = useMemo(() => scenarios(rec), [rec]);
+  const win = rec.options.find((o) => o.key === rec.winner)!;
+  const points = useMemo(() => cashflow(win.cost, win.savingPerYear), [win.cost, win.savingPerYear]);
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="flex justify-end mb-3">
+        <button
+          type="button"
+          onClick={onRestart}
+          data-testid="restart"
+          className="text-xs text-muted hover:text-navy-900 underline underline-offset-2"
+        >
+          Start over
+        </button>
+      </div>
+
+      {unlocked ? (
+        <PlanView
+          plan={plan}
+          onDownloadPdf={() => exportPdf(plan)}
+          onDownloadJson={() => exportJson(plan)}
+        />
+      ) : (
+        <>
           <ResultPanel rec={rec} />
           <ScenarioTable rows={scenarioRows} />
           <PaybackChart points={points} />
 
-          {/* Unlock CTA (static — wired in Task 4) */}
+          <RefinePanel intake={intake} onChange={onRefine} />
+
+          {/* Unlock CTA (wired to Stripe in Task 4) */}
           <div className="mt-4 rounded-lg border border-dashed border-amber-500 bg-amber-500/5 p-4">
             <div className="font-bold text-sm text-navy-900">Unlock your precise, personalised plan — A$29</div>
             <p className="text-sm text-muted mt-0.5">
               Your exact tariff &amp; usage &rarr; scenario comparison, payback chart, the rebates for your
-              postcode, and a downloadable PDF.
+              postcode, and a downloadable PDF. Unlimited re-runs included.
             </p>
-            <button className="mt-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-navy-900 font-bold text-sm px-4 py-2">
+            <button
+              onClick={onUnlock}
+              className="mt-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-navy-900 font-bold text-sm px-4 py-2"
+            >
               Unlock plan — A$29
             </button>
           </div>
@@ -78,8 +130,8 @@ export function App() {
             General information only — not personal financial or product advice. Figures reflect Australia
             mid-2026 and change over time.
           </p>
-        </section>
-      </main>
+        </>
+      )}
     </div>
   );
 }
