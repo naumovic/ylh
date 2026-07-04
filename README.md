@@ -25,6 +25,8 @@ The app is live on **Render.com**, connected to the GitHub repo — push to `mai
 4. Add the domain **yourlocalhero.com.au** (canonical); set **yourlocalhero.app** to 301-redirect to it.
 5. Commercial use is fine on Render; the web-service starter tier is comparable to the old Vercel Pro (~US$20/mo). When Task 4 lands, the static site becomes the single Node web service described above (add `render.yaml`).
 
+**Previewing the paid view before Stripe:** the unlock toggle is hidden for normal prod visitors. To preview the unlocked/paid view on the live site, append **`?preview=1`** to the URL. This is a stopgap (the paid view is client-computed, so it only deters casual unlocks); Task 4 replaces it with a server-verified Stripe token gate.
+
 ## Payments + discounts
 Stripe Checkout for the A$29 unlock. Discount codes for early feedback users are **Stripe promotion codes** (capped, expiring) — configured in the Stripe dashboard, no code.
 

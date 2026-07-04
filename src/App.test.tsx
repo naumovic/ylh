@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { App } from './App.tsx';
@@ -237,6 +237,45 @@ describe('Payback timeline — gated behind the unlock', () => {
     expect(screen.getByTestId('payback-chart')).toBeInTheDocument();
     expect(screen.queryByTestId('locked-payback')).not.toBeInTheDocument();
     expect(document.body).toHaveTextContent(realLabel);
+  });
+});
+
+// --- prod preview unlock (?preview=1) --------------------------------------
+
+describe('Preview unlock — ?preview=1 auto-unlocks (owner prod preview)', () => {
+  it('starts unlocked and renders the paid view without clicking the toggle', () => {
+    const original = window.location.search;
+    window.history.pushState({}, '', '/?preview=1');
+    try {
+      render(<App />);
+      completeWizard(FOUNDER_WIZARD);
+      // Unlocked from the start: real chart + plan view, no toggle click.
+      expect(screen.getByTestId('plan-view')).toBeInTheDocument();
+      expect(screen.getByTestId('payback-chart')).toBeInTheDocument();
+    } finally {
+      window.history.pushState({}, '', '/' + original);
+    }
+  });
+});
+
+// --- prod: product unlock buttons are inert until Stripe (Task 4) ----------
+
+describe('Unlock buttons — inert in prod (no dev, no ?preview=1)', () => {
+  it('clicking the teaser/CTA unlock does nothing; no dev toggle either', () => {
+    window.history.pushState({}, '', '/'); // ensure no ?preview param
+    vi.stubEnv('DEV', false);              // simulate the production bundle
+    try {
+      render(<App />);
+      completeWizard(FOUNDER_WIZARD);
+      expect(screen.queryByTestId('dev-toggle')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('unlock-chart'));
+      fireEvent.click(screen.getByTestId('unlock-cta-btn'));
+      // Still locked — the paid view never appeared.
+      expect(screen.queryByTestId('plan-view')).not.toBeInTheDocument();
+      expect(screen.getByTestId('locked-payback')).toBeInTheDocument();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 

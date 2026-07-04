@@ -17,6 +17,7 @@ Vite + React + TypeScript · Tailwind (brand tokens in `tailwind.config.ts`) · 
 - Today the app ships as a **static site**: build `npm run build`, publish directory `dist/`.
 - **Task 4:** `@vercel/node` functions don't run on Render, so `api/verify.ts` becomes a single small **Node web service** (Express/Hono) that serves `dist/` *and* `/api/verify` (later `/api/create-checkout`), with a `render.yaml`. One service, still stateless, no DB.
 - **Env vars** (Render dashboard → Service → Environment, never in the repo): `STRIPE_SECRET_KEY`, `UNLOCK_JWT_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY`, `VITE_POSTHOG_KEY`.
+- **Preview before Stripe:** the unlock toggle is dev-only; on prod, append `?preview=1` to preview the paid view. Stopgap only (client-computed) — Task 4 replaces it with a server-verified token gate.
 
 ## Design
 Trustworthy & clean, **light** theme. Amber `#F2A900` accent on deep navy `#14304B`. Inter, tabular numerals for money. Recommended option gets the amber accent; "do nothing" is a normal card. Plain, honest, calm copy — say the hard thing without hedging, never salesy.

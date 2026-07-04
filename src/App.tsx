@@ -10,13 +10,30 @@ import { PlanView } from './components/PlanView.tsx';
 import { exportPdf } from './lib/exportPdf.ts';
 import { exportJson } from './lib/exportJson.ts';
 
+/** Owner-only preview of the paid view on the live site, before Stripe (Task 4).
+ * `?preview=1` unlocks; the toggle is otherwise dev-only. NOTE: the paid view is
+ * computed client-side, so this only stops casual free unlocks — Task 4 replaces
+ * it with a real server-verified token gate. */
+function previewUnlockRequested(): boolean {
+  return new URLSearchParams(window.location.search).get('preview') === '1';
+}
+
 export function App() {
   // null until the wizard is complete — the wizard is the entry point.
   const [intake, setIntake] = useState<Intake | null>(null);
-  const [unlocked, setUnlocked] = useState(false);
+  const previewUnlock = previewUnlockRequested();
+  const showDevControls = import.meta.env.DEV || previewUnlock;
+  const [unlocked, setUnlocked] = useState(previewUnlock);
 
   const handleRefine = useCallback((next: Intake) => setIntake(next), []);
   const restart = useCallback(() => setIntake(null), []);
+
+  // The product "Unlock" buttons are inert until Stripe is wired (Task 4): they
+  // only unlock in dev or with ?preview=1. A normal prod visitor clicking Unlock
+  // gets nothing (the real Stripe Checkout redirect replaces this in Task 4).
+  const handleUnlock = useCallback(() => {
+    if (showDevControls) setUnlocked(true);
+  }, [showDevControls]);
 
   return (
     <div className="min-h-full">
@@ -29,16 +46,19 @@ export function App() {
               Supercharge your solar strategy
             </div>
           </div>
-          {/* Dev toggle — remove when Stripe is wired (Task 4) */}
-          <label className="ml-auto flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none" data-testid="dev-toggle">
-            <input
-              type="checkbox"
-              checked={unlocked}
-              onChange={(e) => setUnlocked(e.target.checked)}
-              className="accent-amber-500"
-            />
-            Unlocked (dev)
-          </label>
+          {/* Unlock toggle: shown in local dev, and in prod only via ?preview=1.
+              A normal prod visitor never sees it. Removed when Stripe lands (Task 4). */}
+          {showDevControls && (
+            <label className="ml-auto flex items-center gap-1.5 text-xs text-muted cursor-pointer select-none" data-testid="dev-toggle">
+              <input
+                type="checkbox"
+                checked={unlocked}
+                onChange={(e) => setUnlocked(e.target.checked)}
+                className="accent-amber-500"
+              />
+              Unlocked (preview)
+            </label>
+          )}
         </div>
       </header>
 
@@ -59,7 +79,7 @@ export function App() {
             unlocked={unlocked}
             onRefine={handleRefine}
             onRestart={restart}
-            onUnlock={() => setUnlocked(true)}
+            onUnlock={handleUnlock}
           />
         )}
       </main>
