@@ -1,0 +1,24 @@
+# Render blueprint — single Node web service that serves the built PWA (dist/)
+# and the email-gate API (/api/unlock, /api/reserve). Auto-deploys from `main`.
+# Task 4A. Stripe (/api/verify) will live on this same service later (4B).
+services:
+  - type: web
+    name: yourlocalhero
+    runtime: node
+    plan: starter # do NOT use free — it spins down; the API must stay warm (Task 4A §7)
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: RESEND_API_KEY
+        sync: false # set in the Render dashboard
+      - key: RESEND_AUDIENCE_ID
+        sync: false
+      - key: RESEND_FROM
+        sync: false # e.g. "Your Local Hero <plan@mail.yourlocalhero.com.au>"
+      - key: VITE_POSTHOG_KEY
+        sync: false # build-time (inlined into the client bundle)
