@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import { recommend } from './core/engine.ts';
-import { scenarios, cashflow, buildPlan } from './core/report.ts';
+import { buildPlan } from './core/report.ts';
 import type { Intake } from './core/types.ts';
 import { Wizard } from './components/Wizard.tsx';
 import { RefinePanel } from './components/RefinePanel.tsx';
 import { ResultPanel } from './components/ResultPanel.tsx';
-import { ScenarioTable } from './components/ScenarioTable.tsx';
-import { PaybackChart } from './components/PaybackChart.tsx';
+import { LockedPaybackChart } from './components/LockedPaybackChart.tsx';
 import { PlanView } from './components/PlanView.tsx';
 import { exportPdf } from './lib/exportPdf.ts';
 import { exportJson } from './lib/exportJson.ts';
@@ -27,7 +26,7 @@ export function App() {
           <div>
             <div className="font-bold text-navy-900 leading-none">Your Local Hero</div>
             <div className="text-xs text-muted">
-              Honest solar, EV &amp; battery advice — even if the answer is &quot;do nothing&quot;.
+              Supercharge your solar strategy
             </div>
           </div>
           {/* Dev toggle — remove when Stripe is wired (Task 4) */}
@@ -47,9 +46,9 @@ export function App() {
         {intake === null ? (
           <>
             <div className="text-center mb-8 max-w-xl mx-auto">
-              <h1 className="text-2xl font-bold text-navy-900">Should you get solar, a battery, or an EV charger?</h1>
+              <h1 className="text-2xl font-bold text-navy-900">Should I upgrade my home solar, battery and EV strategy?</h1>
               <p className="text-sm text-muted mt-2">
-                Three quick steps. We&apos;ll give you a straight, honest ballpark — even if the answer is &quot;do nothing&quot;.
+                Three quick steps. We&apos;ll give you a straight, honest ballpark, even if the answer is &quot;do nothing&quot;.
               </p>
             </div>
             <Wizard onComplete={setIntake} />
@@ -78,11 +77,12 @@ interface ResultProps {
 
 function Result({ intake, unlocked, onRefine, onRestart, onUnlock }: ResultProps) {
   const rec = useMemo(() => recommend(intake), [intake]);
-  const plan = useMemo(() => buildPlan(rec, intake), [rec, intake]);
 
-  const scenarioRows = useMemo(() => scenarios(rec), [rec]);
-  const win = rec.options.find((o) => o.key === rec.winner)!;
-  const points = useMemo(() => cashflow(win.cost, win.savingPerYear), [win.cost, win.savingPerYear]);
+  // Compute the paid plan (which contains the real cashflow series) ONLY when
+  // unlocked. While locked it is never built, so the real payback numbers never
+  // enter React state or the DOM; the teaser chart uses hard-coded dummy data.
+  const plan = useMemo(() => (unlocked ? buildPlan(rec, intake) : null), [unlocked, rec, intake]);
+  const year = new Date().getFullYear();
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -97,38 +97,43 @@ function Result({ intake, unlocked, onRefine, onRestart, onUnlock }: ResultProps
         </button>
       </div>
 
-      {unlocked ? (
-        <PlanView
-          plan={plan}
-          onDownloadPdf={() => exportPdf(plan)}
-          onDownloadJson={() => exportJson(plan)}
-        />
+      {/* Ranked options stay visible in both states; payback timing is gated. */}
+      <ResultPanel rec={rec} unlocked={unlocked} />
+
+      {unlocked && plan ? (
+        <>
+          {/* Refining is a paid feature: only available once unlocked. */}
+          <RefinePanel intake={intake} onChange={onRefine} />
+          <PlanView
+            plan={plan}
+            showHeadline={false}
+            onDownloadPdf={() => exportPdf(plan)}
+            onDownloadJson={() => exportJson(plan)}
+          />
+        </>
       ) : (
         <>
-          <ResultPanel rec={rec} />
-          <ScenarioTable rows={scenarioRows} />
-          <PaybackChart points={points} />
-
-          <RefinePanel intake={intake} onChange={onRefine} />
+          {/* Flagship paid visual: teaser only while locked (no real cashflow computed). */}
+          <LockedPaybackChart onUnlock={onUnlock} />
 
           {/* Unlock CTA (wired to Stripe in Task 4) */}
-          <div className="mt-4 rounded-lg border border-dashed border-amber-500 bg-amber-500/5 p-4">
-            <div className="font-bold text-sm text-navy-900">Unlock your precise, personalised plan — A$29</div>
+          <div data-testid="unlock-cta" className="mt-4 rounded-lg border border-dashed border-amber-500 bg-amber-500/5 p-4">
+            <div className="font-bold text-sm text-navy-900">Unlock your precise, personalised plan for A$29</div>
             <p className="text-sm text-muted mt-0.5">
-              Your exact tariff &amp; usage &rarr; scenario comparison, payback chart, the rebates for your
-              postcode, and a downloadable PDF. Unlimited re-runs included.
+              Your exact tariff &amp; usage &rarr; scenario comparison, payback timeline, refine-your-numbers,
+              the rebates for your postcode, and a downloadable PDF. Unlimited re-runs included.
             </p>
             <button
               onClick={onUnlock}
+              data-testid="unlock-cta-btn"
               className="mt-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-navy-900 font-bold text-sm px-4 py-2"
             >
-              Unlock plan — A$29
+              Unlock full timeline
             </button>
           </div>
 
           <p className="mt-3 text-[11px] text-muted italic">
-            General information only — not personal financial or product advice. Figures reflect Australia
-            mid-2026 and change over time.
+            General information only. Not personal financial or product advice. Figures reflect Australia {year} and may change over time.
           </p>
         </>
       )}

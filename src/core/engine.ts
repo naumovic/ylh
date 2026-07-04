@@ -36,7 +36,7 @@ export function recommend(intake: Intake): Recommendation {
     options.push({
       key: 'solar', name: `Install solar (~${recSolarKw} kW)`, cost: sCost, savingPerYear: sSave,
       paybackYears: sSave > 0 ? sCost / sSave : Infinity,
-      reason: `You have no solar yet — this is the foundation. A ~${recSolarKw} kW system generates ~${genDay.toFixed(1)} kWh/day; about ${selfDay.toFixed(1)} offsets daytime grid use at ${intake.importRateCents}c, the rest exports at ${intake.fitCents}c. Battery and EV charging only make sense once this is in.`,
+      reason: `You have no solar yet, so this is the foundation. A ~${recSolarKw} kW system generates ~${genDay.toFixed(1)} kWh/day; about ${selfDay.toFixed(1)} offsets daytime grid use at ${intake.importRateCents}c, the rest exports at ${intake.fitCents}c. Battery and EV charging only make sense once this is in.`,
     });
   } else {
     const addKw = Math.max(0, intake.addKw);
@@ -48,8 +48,8 @@ export function recommend(intake: Intake): Recommendation {
     const solCost = addKw * CFG.solarCostPerKw;
     let solReason: string;
     if (addKw <= 0) solReason = 'Set "panels to add" to model a solar upgrade.';
-    else if (unmetDaytimeDay < 0.5) solReason = `You already export a surplus (~${existingSurplusDay.toFixed(1)} kWh/day), so your daytime load is covered — extra panels would mostly just export at ${intake.fitCents}c. Use the surplus you already have (e.g. charge an EV) before adding panels.`;
-    else solReason = `About ${offsetDay.toFixed(1)} of the ~${extraGenDay.toFixed(1)} kWh/day from ${addKw} kW of new panels would offset daytime grid use at ${intake.importRateCents}c; the rest exports at ${intake.fitCents}c. Worth it when generation — not storage — is your constraint.`;
+    else if (unmetDaytimeDay < 0.5) solReason = `You already export a surplus (~${existingSurplusDay.toFixed(1)} kWh/day), so your daytime load is covered, and extra panels would mostly just export at ${intake.fitCents}c. Use the surplus you already have (e.g. charge an EV) before adding panels.`;
+    else solReason = `About ${offsetDay.toFixed(1)} of the ~${extraGenDay.toFixed(1)} kWh/day from ${addKw} kW of new panels would offset daytime grid use at ${intake.importRateCents}c; the rest exports at ${intake.fitCents}c. Worth it when generation, not storage, is your constraint.`;
     options.push({
       key: 'solar', name: `Add ${addKw} kW more panels`, cost: solCost, savingPerYear: solSaving,
       paybackYears: solSaving > 0 ? solCost / solSaving : Infinity, reason: solReason,
@@ -65,7 +65,7 @@ export function recommend(intake: Intake): Recommendation {
   const batSaving = batShiftDay * 365 * spread;
   const batCost = recKwh * CFG.batteryGrossPerKwh - rebate(recKwh);
   let batReason = `Shifts about ${batShiftDay.toFixed(1)} kWh/day of cheap daytime solar to cover evening use (you have ~${eveningDay.toFixed(1)} kWh/day evening load and ~${captureSurplusDay.toFixed(1)} kWh/day daytime surplus${seqNote}).`;
-  if (eveningDay < 3) batReason = `Your evening use is small (~${eveningDay.toFixed(1)} kWh/day), so a battery has little to shift — it can't save enough to pay back.`;
+  if (eveningDay < 3) batReason = `Your evening use is small (~${eveningDay.toFixed(1)} kWh/day), so a battery has little to shift and can't save enough to pay back.`;
   else if (shiftDay < 0.5) batReason = `There's little daytime surplus to store${seqNote}, so a battery has nothing to shift yet.`;
   if (crossesTaper && batSaving > 0) batReason += ' Note: sizing past 14 kWh drops the rebate to 60% on the extra.';
   options.push({
@@ -79,13 +79,13 @@ export function recommend(intake: Intake): Recommendation {
     const chargeableDay = evDaytime ? Math.min(captureSurplusDay, evNeedDay) : 0;
     const evSaving = evDaytime ? chargeableDay * 365 * spread : 0;
     let evReason: string;
-    if (evDaytime) evReason = `Fill the car from daytime solar instead of the grid: ~${chargeableDay.toFixed(1)} kWh/day${seqNote} avoids buying at ${intake.importRateCents}c — a ${(spread * 100).toFixed(0)}c/kWh saving (the car needs ~${evNeedDay.toFixed(1)} kWh/day).`;
-    else if (intake.charge === 'night_home') evReason = 'Charging overnight pulls from the grid, not your solar — a daytime charger saves nothing unless you shift charging to midday.';
-    else evReason = "Charging away / on public chargers means your solar can't reach the car — no solar-vs-grid saving from a home charger.";
+    if (evDaytime) evReason = `Fill the car from daytime solar instead of the grid: ~${chargeableDay.toFixed(1)} kWh/day${seqNote} avoids buying at ${intake.importRateCents}c, a ${(spread * 100).toFixed(0)}c/kWh saving (the car needs ~${evNeedDay.toFixed(1)} kWh/day).`;
+    else if (intake.charge === 'night_home') evReason = 'Charging overnight pulls from the grid, not your solar, so a daytime charger saves nothing unless you shift charging to midday.';
+    else evReason = "Charging away / on public chargers means your solar can't reach the car, so there's no solar-vs-grid saving from a home charger.";
     options.push({
       key: 'ev', name: 'EV charger (charge on daytime solar)', cost: CFG.evChargerCost, savingPerYear: evSaving,
       paybackYears: evSaving > 0 ? CFG.evChargerCost / evSaving : Infinity, reason: evReason,
-      extra: intake.ev === 'buying' ? "You're about to buy an EV — set the charging window to daytime to capture this." : null,
+      extra: intake.ev === 'buying' ? "You're about to buy an EV, so set the charging window to daytime to capture this." : null,
     });
   }
 

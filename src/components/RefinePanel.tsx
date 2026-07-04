@@ -33,7 +33,7 @@ export function RefinePanel({ intake, onChange }: Props) {
       >
         <span>
           <span className="font-semibold text-sm text-navy-900">Refine your numbers</span>
-          <span className="block text-xs text-muted">We estimated these — adjust any and the result updates instantly.</span>
+          <span className="block text-xs text-muted">We estimated these. Adjust any and the result updates instantly.</span>
         </span>
         <span className="text-muted text-sm shrink-0 ml-3">{open ? '▲' : '▼'}</span>
       </button>

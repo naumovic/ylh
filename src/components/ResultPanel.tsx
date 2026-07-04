@@ -3,9 +3,18 @@ import type { Recommendation, Option } from '../core/types.ts';
 const fmt = (n: number) => '$' + Math.round(n).toLocaleString();
 const pb = (y: number) => (!isFinite(y) || y <= 0 ? '—' : y.toFixed(1) + ' yrs');
 
-function pill(o: Option) {
+function pill(o: Option, unlocked: boolean) {
   if (o.key === 'nothing')
     return <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-warn/10 text-warn">baseline</span>;
+
+  // Payback timing is a paid detail — while locked, show a lock cue instead of the number.
+  if (!unlocked)
+    return (
+      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600">
+        🔒 payback
+      </span>
+    );
+
   const cls =
     o.savingPerYear <= 0
       ? 'bg-danger/10 text-danger'
@@ -23,18 +32,21 @@ function pill(o: Option) {
 
 interface Props {
   rec: Recommendation;
+  unlocked: boolean;
 }
 
-export function ResultPanel({ rec }: Props) {
+export function ResultPanel({ rec, unlocked }: Props) {
   const win = rec.options.find((o) => o.key === rec.winner)!;
 
   return (
     <>
       {/* Headline */}
       <div className="rounded-xl border border-hairline bg-gradient-to-br from-white to-canvas p-5 mb-4">
-        <div className="text-xs uppercase tracking-wide text-muted">Recommended next move · ballpark</div>
+        <div className="text-xs uppercase tracking-wide text-muted">
+          Recommended next move{unlocked ? '' : ' · ballpark'}
+        </div>
         <div className="text-xl font-bold text-navy-900 mt-1">
-          {rec.winner === 'nothing' ? 'Hold off — nothing pays back well enough yet' : win.name}
+          {rec.winner === 'nothing' ? 'Hold off, nothing pays back well enough yet' : win.name}
         </div>
         <p className="text-sm text-navy-700 mt-1">{win.reason}</p>
       </div>
@@ -56,7 +68,7 @@ export function ResultPanel({ rec }: Props) {
                     {winner && o.key !== 'nothing' ? '★ ' : ''}
                     {o.name}
                   </span>
-                  {pill(o)}
+                  {pill(o, unlocked)}
                 </div>
                 {o.key !== 'nothing' && (
                   <div className="flex gap-5 my-1.5 text-sm tnum">
@@ -68,10 +80,13 @@ export function ResultPanel({ rec }: Props) {
                       <div className="text-xs text-muted">Saving/yr</div>
                       <b>{o.savingPerYear > 0 ? fmt(o.savingPerYear) : '—'}</b>
                     </div>
-                    <div>
-                      <div className="text-xs text-muted">Payback</div>
-                      <b>{pb(o.paybackYears)}</b>
-                    </div>
+                    {/* Payback timing is gated behind the unlock. */}
+                    {unlocked && (
+                      <div>
+                        <div className="text-xs text-muted">Payback</div>
+                        <b>{pb(o.paybackYears)}</b>
+                      </div>
+                    )}
                   </div>
                 )}
                 <p className="text-sm text-muted">

@@ -8,16 +8,16 @@ export const CHECKS: Record<OptionKey, string[]> = {
     'CEC-approved panels AND inverter (check both model numbers)',
     'SAA-accredited installer; product + workmanship warranties in writing',
     "Inverter size / export limit matches your network's rules",
-    'System sized to your daytime load — not oversized just to export at a few cents',
+    'System sized to your daytime load, not oversized just to export at a few cents',
     'Roof orientation & shading assessed (not just a desktop estimate)',
   ],
   battery: [
     'CEC-listed battery model; installed to AS/NZS 5139',
-    "Sized to your evening load — don't pay for capacity past the 14 kWh 100%-rebate band without a reason",
+    "Sized to your evening load; don't pay for capacity past the 14 kWh 100%-rebate band without a reason",
     'Federal rebate applied as an upfront STC discount on the quote (you do not claim it)',
     'Warranty stated in cycles AND years; usable vs nominal kWh clarified',
     'Backup capability confirmed if you want blackout cover',
-    'VPP participation optional — understand any lock-in',
+    'VPP participation optional; understand any lock-in',
   ],
   ev: [
     'A smart charger (OCPP) that can schedule to midday so it soaks up solar',
@@ -29,7 +29,7 @@ export const CHECKS: Record<OptionKey, string[]> = {
     'Re-check if you get an EV (especially daytime charging)',
     'Re-check if your usage shifts (more evening load makes a battery work harder)',
     'Watch your tariff & feed-in rate at renewal',
-    'The battery rebate steps down ~6-monthly — revisit before it shrinks',
+    'The battery rebate steps down ~6-monthly, so revisit before it shrinks',
   ],
 };
 
@@ -88,11 +88,11 @@ export function buildPlan(rec: Recommendation, intake: Intake): Plan {
   const win = rec.options.find((o) => o.key === rec.winner)!;
   const spreadC = Math.max(0, intake.importRateCents - intake.fitCents).toFixed(0);
   const headline = rec.winner === 'nothing'
-    ? 'Hold off — nothing pays back well enough yet.'
+    ? 'Hold off, nothing pays back well enough yet.'
     : win.name;
   const rebatesNote =
     `Federal battery rebate: ~A$252 per usable kWh (point-of-sale STC discount), tapering above 14 kWh and stepping down ~6-monthly. ` +
-    `Your state (${intake.state}): ~${intake.importRateCents}c/kWh import, ~${intake.fitCents}c/kWh feed-in — the ${spreadC}c gap is what every self-consumed kWh is worth.`;
+    `Your state (${intake.state}): ~${intake.importRateCents}c/kWh import, ~${intake.fitCents}c/kWh feed-in, so the ${spreadC}c gap is what every self-consumed kWh is worth.`;
   return {
     generatedAt: new Date().toISOString(),
     state: intake.state,
@@ -103,6 +103,6 @@ export function buildPlan(rec: Recommendation, intake: Intake): Plan {
     cashflow: cashflow(win.cost, win.savingPerYear),
     checklist: CHECKS[rec.winner] ?? [],
     rebatesNote,
-    disclaimer: 'General information only — not personal financial or product advice. Figures reflect Australia mid-2026 and change over time.',
+    disclaimer: `General information only. Not personal financial or product advice. Figures reflect Australia ${new Date().getFullYear()} and may change over time.`,
   };
 }

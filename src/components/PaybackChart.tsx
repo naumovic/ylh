@@ -2,6 +2,8 @@ import type { CashflowPoint } from '../core/report.ts';
 
 interface Props {
   points: CashflowPoint[];
+  /** Overridden by the locked teaser so its dummy chart doesn't claim the real chart's testid. */
+  testId?: string;
 }
 
 const W = 600;
@@ -10,7 +12,7 @@ const PAD = { top: 20, right: 20, bottom: 40, left: 60 };
 const plotW = W - PAD.left - PAD.right;
 const plotH = H - PAD.top - PAD.bottom;
 
-export function PaybackChart({ points }: Props) {
+export function PaybackChart({ points, testId = 'payback-chart' }: Props) {
   if (points.length === 0) return null;
 
   const maxYear = points[points.length - 1].year;
@@ -49,7 +51,7 @@ export function PaybackChart({ points }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface p-5 mt-4" data-testid="payback-chart">
+    <div className="rounded-xl border border-hairline bg-surface p-5 mt-4" data-testid={testId}>
       <h2 className="text-xs uppercase tracking-wide text-muted mb-3">Payback timeline · ballpark</h2>
       {breakEvenYear === null ? (
         <p className="text-sm text-muted italic">No payback within {maxYear} years.</p>

@@ -26,7 +26,7 @@ const PROFILE_CHOICES: Choice<UsageProfile>[] = [
   { value: 'day_heavy', label: 'Day-heavy', hint: 'Home / working during the day' },
   { value: 'even', label: 'Even', hint: 'Spread through the day' },
   { value: 'night_heavy', label: 'Night-heavy', hint: 'Mostly evenings' },
-  { value: 'unknown', label: 'Not sure', hint: "That's fine — we'll assume even" },
+  { value: 'unknown', label: 'Not sure', hint: "That's fine, we'll assume even" },
 ];
 
 const EV_CHOICES: Choice<EvStatus>[] = [

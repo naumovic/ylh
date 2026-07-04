@@ -195,7 +195,7 @@ export function exportPdf(plan: Plan): void {
   doc.setTextColor(NAVY);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('Before you commit — checklist', margin, cy);
+  doc.text('Before you commit: checklist', margin, cy);
   cy += 6;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
