@@ -10,6 +10,8 @@ import { PlanView } from './components/PlanView.tsx';
 import { UnlockDialog } from './components/UnlockDialog.tsx';
 import { PostUnlockPanel } from './components/PostUnlockPanel.tsx';
 import { WaitlistCapture } from './components/WaitlistCapture.tsx';
+import { Footer } from './components/Footer.tsx';
+import { PrivacyPage, TermsPage } from './pages/legal.tsx';
 import { exportPdf, planPdfBase64 } from './lib/exportPdf.ts';
 import { exportJson } from './lib/exportJson.ts';
 import { initAnalytics, capture } from './lib/analytics.ts';
@@ -36,7 +38,16 @@ function readUnlockState(): UnlockState {
   }
 }
 
+/** Tiny path router — the Node service serves index.html for every non-API route,
+ *  so a full-page load of /privacy or /terms lands here and renders the right page. */
 export function App() {
+  const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (path === '/privacy') return <PrivacyPage />;
+  if (path === '/terms') return <TermsPage />;
+  return <MainApp />;
+}
+
+function MainApp() {
   const [intake, setIntake] = useState<Intake | null>(null);
   const [unlock, setUnlock] = useState<UnlockState>(readUnlockState);
 
@@ -92,6 +103,7 @@ export function App() {
           />
         )}
       </main>
+      <Footer />
     </div>
   );
 }

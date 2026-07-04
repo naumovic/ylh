@@ -1,6 +1,6 @@
 # Your Local Hero
 
-Independent solar · EV · battery advisor for Australian homes. Free ballpark answer for everyone; a low one-off unlock buys a precise, personalised plan (generated **in code** — no LLM). Built as an installable PWA, deployed on Render.
+Independent solar · EV · battery advisor for Australian homes. Free ballpark answer for everyone; an **email-gate unlock** (free while in early access — first name, last name, email) reveals the full personalised plan (generated **in code** — no LLM) and emails it. Built as an installable PWA, deployed on Render. Real payments (Stripe) are deferred pending the 4A go/no-go gate.
 
 ## Quick start
 ```bash
@@ -34,7 +34,8 @@ The app is live on **Render.com** as a **single Node web service**, connected to
   | `RESEND_API_KEY` | server | Resend API key (contacts + email send) |
   | `RESEND_AUDIENCE_ID` | server | Resend Audience the contacts upsert into |
   | `RESEND_FROM` | server | Verified sender, e.g. `Your Local Hero <plan@mail.yourlocalhero.com.au>` |
-  | `VITE_POSTHOG_KEY` | client (build-time) | PostHog project key (inlined into the bundle) |
+  | `VITE_POSTHOG_KEY` | client (build-time) | PostHog project key (`phc_…`, publishable). Analytics no-ops if unset. |
+  | `VITE_POSTHOG_HOST` | client (build-time) | PostHog region host, e.g. `https://us.i.posthog.com` (default) or `https://eu.i.posthog.com` |
 
   If `RESEND_API_KEY`/`RESEND_AUDIENCE_ID` are unset, the service still runs and `/api/unlock` returns `{ ok: true, emailQueued: false }` — it just doesn't store or email.
 - **Domain:** add **yourlocalhero.com.au** (canonical); set **yourlocalhero.app** to 301-redirect to it.
@@ -56,7 +57,9 @@ RESEND_FROM=Your Local Hero <plan@mail.yourlocalhero.com.au>
 ```
 Then `npm run build && npm start` and POST to `http://localhost:3000/api/unlock`.
 
-**Previewing the paid view:** the unlock toggle is hidden for normal prod visitors; append **`?preview=1`** to the URL to preview the unlocked view (stopgap — the paid view is client-computed).
+**Previewing without the form:** append **`?preview=1`** to the URL to unlock the full plan without filling the email form (founder/preview shortcut; unlock also persists in `localStorage`).
+
+**Privacy & terms:** static pages at `/privacy` and `/terms` (client-routed; the Node service serves `index.html` for both). Linked in the footer and from the unlock form's consent checkbox. Update the contact email in `src/pages/legal.tsx` (`CONTACT_EMAIL`) to a mailbox you actually receive.
 
 > **Note on Resend custom fields:** Resend Audience contacts persist only email / first name / last name / unsubscribed. The funnel properties `source` (`unlock`/`waitlist`) and `founder_reserved` are captured authoritatively in **PostHog** (Task 4A §4); on the contact they're best-effort.
 

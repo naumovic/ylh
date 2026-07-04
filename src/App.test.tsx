@@ -219,6 +219,33 @@ describe('Paid plan view', () => {
   });
 });
 
+// --- legal pages + footer --------------------------------------------------
+describe('Privacy / Terms pages', () => {
+  it('renders the privacy policy at /privacy, naming both processors + deletion contact', () => {
+    window.history.pushState({}, '', '/privacy');
+    render(<App />);
+    expect(screen.getByRole('heading', { name: /privacy policy/i })).toBeInTheDocument();
+    expect(document.body).toHaveTextContent('Resend');
+    expect(document.body).toHaveTextContent('PostHog');
+    expect(screen.getAllByRole('link', { name: /hello@yourlocalhero/i }).length).toBeGreaterThan(0);
+    // not the wizard
+    expect(screen.queryByTestId('step-1')).not.toBeInTheDocument();
+  });
+
+  it('renders terms at /terms', () => {
+    window.history.pushState({}, '', '/terms');
+    render(<App />);
+    expect(screen.getByRole('heading', { name: /terms of use/i })).toBeInTheDocument();
+  });
+
+  it('main app footer links to privacy and terms', () => {
+    render(<App />);
+    const footer = document.querySelector('footer')!;
+    expect(footer.querySelector('a[href="/privacy"]')).toBeInTheDocument();
+    expect(footer.querySelector('a[href="/terms"]')).toBeInTheDocument();
+  });
+});
+
 // --- pure report tracing ---------------------------------------------------
 describe('report — buildPlan traces core', () => {
   it('founder plan has scenarios, 16 cashflow points, checklist, QLD rebates', () => {
