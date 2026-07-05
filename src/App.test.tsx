@@ -227,7 +227,7 @@ describe('Privacy / Terms pages', () => {
     expect(screen.getByRole('heading', { name: /privacy policy/i })).toBeInTheDocument();
     expect(document.body).toHaveTextContent('Resend');
     expect(document.body).toHaveTextContent('PostHog');
-    expect(screen.getAllByRole('link', { name: /hello@yourlocalhero/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /vergeco@hey\.com/i }).length).toBeGreaterThan(0);
     // not the wizard
     expect(screen.queryByTestId('step-1')).not.toBeInTheDocument();
   });

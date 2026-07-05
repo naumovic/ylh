@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import { Footer } from '../components/Footer.tsx';
 
-// Where deletion / privacy requests go. TODO(founder): confirm this mailbox exists.
-export const CONTACT_EMAIL = 'hello@yourlocalhero.com.au';
+// Where deletion / privacy requests go. Redirects to the founder's private inbox.
+export const CONTACT_EMAIL = 'vergeco@hey.com';
 
 function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
   return (
