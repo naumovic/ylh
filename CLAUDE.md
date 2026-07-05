@@ -18,6 +18,7 @@ Vite + React + TypeScript · Tailwind (brand tokens in `tailwind.config.ts`) · 
 - **Env vars** (Render dashboard → Service → Environment, never in the repo): `RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, `RESEND_FROM`, `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST` (region). Stripe vars (`STRIPE_SECRET_KEY`, `UNLOCK_JWT_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY`) arrive with 4B.
 - **`?preview=1`** unlocks the paid view for founder/preview without the email form.
 - **Task 4 (Stripe) is deferred** pending the 4A email-gate go/no-go gate (`Pivot-3.md` §6). When it lands, `api/verify` joins this same service.
+- **Live at** `https://yourlocalhero-web.onrender.com` (service `ylh-web`, repo `naumovic/ylh`). Deploy topology + the manual founder to-dos (Resend domain, PostHog key, custom domain, cleanup) live in **`docs/ops-checklist.md`** — read it first when resuming ops work.
 
 ## Design
 Trustworthy & clean, **light** theme. Amber `#F2A900` accent on deep navy `#14304B`. Inter, tabular numerals for money. Recommended option gets the amber accent; "do nothing" is a normal card. Plain, honest, calm copy — say the hard thing without hedging, never salesy.
