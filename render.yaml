@@ -3,7 +3,7 @@
 # Task 4A. Stripe (/api/verify) will live on this same service later (4B).
 services:
   - type: web
-    name: yourlocalhero
+    name: ylh-web
     runtime: node
     plan: starter # do NOT use free — it spins down; the API must stay warm (Task 4A §7)
     branch: main
