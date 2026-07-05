@@ -6,7 +6,10 @@
 import posthog from 'posthog-js';
 
 const KEY = import.meta.env.VITE_POSTHOG_KEY;
-const HOST = import.meta.env.VITE_POSTHOG_HOST ?? 'https://us.i.posthog.com';
+// `||` (not `??`): an empty-string VITE_POSTHOG_HOST (e.g. the var set-but-blank on
+// the host) must still fall back to the US default. With `??` an empty string slips
+// through and posthog-js posts events to the current origin (`/e/`) instead of PostHog.
+const HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 
 let ready = false;
 
