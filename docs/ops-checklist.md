@@ -1,6 +1,6 @@
 # Deployment & founder DevOps checklist
 
-**Living doc — update as you go.** Snapshot: 5 Jul 2026, at commit `80dadf2` (Task 4A complete: email-gate unlock, survey, waitlist, privacy/terms, PostHog events).
+**Living doc — update as you go.** Snapshot: 5 Jul 2026, at commit `d5c598b` (Task 4A complete + live: PostHog key deployed, Resend domain verified, legal contact email set, duplicate Render service suspended).
 
 This captures the deploy topology and the manual founder steps that Claude Code **can't** do (accounts, DNS, dashboards). Code + tests are done; these are the ops around them.
 
@@ -12,25 +12,26 @@ This captures the deploy topology and the manual founder steps that Claude Code 
 - **Render service:** `ylh-web` (Web Service, **Starter** plan) → **https://yourlocalhero-web.onrender.com**
   - Runtime: Node 22 · Build: `npm ci && npm run build` · Start: `npm start` · Health check: `/`
   - Serves the built PWA (`dist/`) **and** the API (`/api/unlock`, `/api/reserve`) from one service.
-- **Env vars set on the service:** `NODE_VERSION=22`, `RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, `RESEND_FROM` (see to-dos), and `VITE_POSTHOG_KEY` only if you've added it.
-- **Resend:** account live, using the **General** audience; verified working (a test plan email was delivered).
-- **Smoke test (prod, 5 Jul):** `GET /` 200 · `/privacy` 200 · bad-email → 400 · waitlist unlock → `{ok:true,emailQueued:false}` · `/api/reserve` → `{ok:true}`. Full email-gate bundle confirmed deployed.
+- **Env vars set on the service:** `NODE_VERSION=22`, `RESEND_API_KEY`, `RESEND_AUDIENCE_ID`, `RESEND_FROM` (verified domain), and `VITE_POSTHOG_KEY` (**confirmed baked into the live bundle** — `phc_qFcT…`).
+- **Resend:** account live, using the **General** audience; sending domain verified. (Real-user delivery to a non-signup inbox still to be confirmed via the browser test below.)
+- **Smoke test (prod, 5 Jul):** `GET /` 200 · `/privacy` 200 · bad-email → 400 · waitlist unlock → `{ok:true,emailQueued:false}` · `/api/reserve` → `{ok:true}`. PostHog key + `vergeco@hey.com` contact email confirmed in the deployed bundle. Full email-gate bundle deployed.
 
 ---
 
 ## Founder to-dos (manual — not Claude Code)
 
-- [ ] **Verify a Resend sending domain.** Right now `RESEND_FROM=onboarding@resend.dev`, which **only delivers to your own Resend signup email** — real users get nothing. In Resend → Domains → add `mail.yourlocalhero.com.au`, add the DNS records it shows (SPF `TXT`, DKIM, return-path/MX) at your DNS host, wait for "Verified", then set `RESEND_FROM=Your Local Hero <plan@mail.yourlocalhero.com.au>` on the Render service.
-- [ ] **PostHog** (the go/no-go signal — without it there's no funnel data). Create a PostHog Cloud project (pick US or EU region), copy the **Project API key** (`phc_…`), and on the Render service set `VITE_POSTHOG_KEY` (+ `VITE_POSTHOG_HOST=https://eu.i.posthog.com` if you chose EU). Redeploy. Analytics is a no-op until this is set.
+- [x] **Verify a Resend sending domain.** ~~Right now `RESEND_FROM=onboarding@resend.dev`~~ Domain verified and `RESEND_FROM` set to the domain address on the Render service. **Still confirm** a real plan email actually lands in a **non-signup** inbox via the browser test below (that's the true proof the domain path works).
+- [x] **PostHog** (the go/no-go signal). Project created, `VITE_POSTHOG_KEY` set on the Render service and **confirmed baked into the live bundle** (`phc_qFcT…`). Region default (US host). Next: confirm events actually land in PostHog → Live events during the browser test below.
 - [ ] **Custom domain.** Attach `yourlocalhero.com.au` to the **`ylh-web`** service (Settings → Custom Domains), add the DNS records Render shows (apex usually needs ALIAS/ANAME or A records; `www` a CNAME); TLS auto-issues. Point `yourlocalhero.app` to 301-redirect to the canonical domain.
-- [ ] **Legal contact email.** `CONTACT_EMAIL` in `src/pages/legal.tsx` is a placeholder (`hello@yourlocalhero.com.au`). Change it to a mailbox you actually receive, and make sure it works (deletion requests go there).
+- [x] **Legal contact email.** `CONTACT_EMAIL` in `src/pages/legal.tsx` set to `vergeco@hey.com` (forwards to founder's private inbox); live in prod as of `d5c598b`. **Still confirm** the forward actually delivers — send a test to `vergeco@hey.com` and check it arrives (deletion requests go there).
 - [ ] **Verify the real unlock flow** in a browser at the live URL: wizard → Unlock → form (your signup email) → **plan email with PDF arrives**, reload stays unlocked, survey + reservation + `/privacy` all work.
 - [ ] **Keep the service on Starter** (not Free) so it never spins down.
 - [ ] **Go/no-go gate:** after ~300 free results, read the PostHog funnel and decide **4B (Stripe)** vs the slow-asset path. Write the final go/no-go numbers into `Pivot-3.md` §6.
 
 ## Cleanup (safe to do anytime)
 
-- [ ] **Delete the stale Render bits** on the wrong repo: the old **Blueprint(s)** and the **suspended `yourlocalhero` service** (they're wired to `github.com/naumovic/yourlocalhero`, not `ylh`). Delete via the **Blueprints** page (blueprint-managed services can't be deleted directly).
+- [ ] **Delete the suspended duplicate `ylh-web`.** A **blueprint-managed** `ylh-web` (URL **`ylh-web.onrender.com`**, older build, no PostHog key) was running alongside the canonical service. **Now suspended** (5 Jul) — delete it via the **Blueprints** page when convenient (blueprint-managed services can't be deleted directly). ⚠️ Both services are *named* `ylh-web` in the dashboard — tell them apart by **URL**: keep `yourlocalhero-web.onrender.com` (live, has the PostHog key), remove `ylh-web.onrender.com`. Note the latent name collision: `render.yaml` declares `name: ylh-web`, so re-applying the blueprint would recreate it.
+- [ ] **Delete the stale Render bits** on the wrong repo: the old **Blueprint(s)** and the **suspended `yourlocalhero` service** (they're wired to `github.com/naumovic/yourlocalhero`, not `ylh`). Delete via the **Blueprints** page.
 - [ ] **Decide on the old GitHub repo.** Two repos exist: `naumovic/ylh` (canonical) and `naumovic/yourlocalhero` (old/stale scaffold). Simplest is to keep using `ylh`; if you want the repo *named* `yourlocalhero`, rename/delete the old one first (the name is taken). Local + Render both use `ylh`.
 - [ ] **Delete test contacts** from the Resend audience (a `waitlist`/reserve contact for your own email was added during smoke testing).
 
