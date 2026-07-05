@@ -33,7 +33,7 @@ function LegalLayout({ title, children }: { title: string; children: ReactNode }
 export function PrivacyPage() {
   return (
     <LegalLayout title="Privacy policy">
-      <p className="text-xs text-muted">Last updated {new Date().getFullYear()}. Plain English, kept short.</p>
+      <p className="text-xs text-muted">Last updated {new Date().getFullYear()}.</p>
 
       <h2>What we collect</h2>
       <p>
@@ -70,7 +70,7 @@ export function PrivacyPage() {
 export function TermsPage() {
   return (
     <LegalLayout title="Terms of use">
-      <p className="text-xs text-muted">Last updated {new Date().getFullYear()}. Plain English, kept short.</p>
+      <p className="text-xs text-muted">Last updated {new Date().getFullYear()}.</p>
 
       <h2>General information only</h2>
       <p>
