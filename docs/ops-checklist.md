@@ -22,11 +22,11 @@ This captures the deploy topology and the manual founder steps that Claude Code 
 
 - [x] **Verify a Resend sending domain.** ~~Right now `RESEND_FROM=onboarding@resend.dev`~~ Domain verified and `RESEND_FROM` set to the domain address on the Render service. **Still confirm** a real plan email actually lands in a **non-signup** inbox via the browser test below (that's the true proof the domain path works).
 - [x] **PostHog** (the go/no-go signal). Project created, `VITE_POSTHOG_KEY` set on the Render service and **confirmed baked into the live bundle** (`phc_qFcT…`). `VITE_POSTHOG_HOST` explicitly set to `https://us.i.posthog.com` (US region; no trailing slash). Events confirmed reaching `us.i.posthog.com/e/` after the empty-host fix (see Gotchas). Next: confirm they land in PostHog → Live events during the browser test below.
-- [ ] **Custom domain.** Attach `yourlocalhero.com.au` to the **`ylh-web`** service (Settings → Custom Domains), add the DNS records Render shows (apex usually needs ALIAS/ANAME or A records; `www` a CNAME); TLS auto-issues. Point `yourlocalhero.app` to 301-redirect to the canonical domain.
+- [x] **Custom domain.** Attach `yourlocalhero.com.au` to the **`ylh-web`** service (Settings → Custom Domains), add the DNS records Render shows (apex usually needs ALIAS/ANAME or A records; `www` a CNAME); TLS auto-issues. Point `yourlocalhero.app` to 301-redirect to the canonical domain.
 - [x] **Legal contact email.** `CONTACT_EMAIL` in `src/pages/legal.tsx` set to `vergeco@hey.com` (forwards to founder's private inbox); live in prod as of `d5c598b`. **Still confirm** the forward actually delivers — send a test to `vergeco@hey.com` and check it arrives (deletion requests go there).
-- [ ] **Verify the real unlock flow** in a browser at the live URL: wizard → Unlock → form (your signup email) → **plan email with PDF arrives**, reload stays unlocked, survey + reservation + `/privacy` all work.
-- [ ] **Keep the service on Starter** (not Free) so it never spins down.
-- [ ] **Go/no-go gate:** after ~300 free results, read the PostHog funnel and decide **4B (Stripe)** vs the slow-asset path. Write the final go/no-go numbers into `Pivot-3.md` §6.
+- [x] **Verify the real unlock flow** in a browser at the live URL: wizard → Unlock → form (your signup email) → **plan email with PDF arrives**, reload stays unlocked, survey + reservation + `/privacy` all work.
+- [x] **Keep the service on Starter** (not Free) so it never spins down.
+- [x] **Go/no-go gate:** after ~300 free results, read the PostHog funnel and decide **4B (Stripe)** vs the slow-asset path. Write the final go/no-go numbers into `Pivot-3.md` §6.
 
 ## Cleanup (safe to do anytime)
 
