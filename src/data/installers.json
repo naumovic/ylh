@@ -1,0 +1,151 @@
+{
+  "version": "2026-07-09",
+  "note": "PLACEHOLDER installers with deliberately fake names (Phase 1). No real business is described here, so a leaked build cannot defame anyone. Real vetted installers arrive one PR at a time in Phase 3. Schema: design section 3.",
+  "installers": [
+    {
+      "id": "test-solar-co",
+      "name": "Test Solar Co",
+      "suburb": "Capalaba",
+      "state": "QLD",
+      "base_postcode": "4157",
+      "service_postcodes": { "ranges": [[4000, 4179], [4207, 4230]] },
+      "work_types": ["battery", "solar", "ev_charger"],
+      "phone": "07 3000 0001",
+      "website": "https://example.com/test-solar-co",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000001",
+        "electrical_licence": "QLD 00001",
+        "abn": "11 000 000 001",
+        "years_operating": 9,
+        "verified_on": "2026-06-01",
+        "verified_by": "manual"
+      },
+      "listing": {
+        "featured_slots": [
+          { "zone": "bne-east", "work": "battery", "until": "2026-12-01", "stripe_sub": null },
+          { "zone": "bne-east", "work": "solar", "until": "2026-12-01", "stripe_sub": null }
+        ]
+      },
+      "status": "active"
+    },
+    {
+      "id": "mock-battery-co",
+      "name": "Mock Battery Co",
+      "suburb": "Wynnum",
+      "state": "QLD",
+      "base_postcode": "4178",
+      "service_postcodes": { "ranges": [[4151, 4179]] },
+      "work_types": ["battery"],
+      "phone": "07 3000 0002",
+      "website": "https://example.com/mock-battery-co",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000002",
+        "electrical_licence": "QLD 00002",
+        "abn": "11 000 000 002",
+        "years_operating": 6,
+        "verified_on": "2026-06-01",
+        "verified_by": "manual"
+      },
+      "listing": {
+        "featured_slots": [
+          { "zone": "bne-east", "work": "battery", "until": "2026-12-01", "stripe_sub": null }
+        ]
+      },
+      "status": "active"
+    },
+    {
+      "id": "placeholder-power-co",
+      "name": "Placeholder Power Co",
+      "suburb": "Manly",
+      "state": "QLD",
+      "base_postcode": "4179",
+      "service_postcodes": { "ranges": [[4000, 4179]] },
+      "work_types": ["battery", "solar"],
+      "phone": "07 3000 0003",
+      "website": "https://example.com/placeholder-power-co",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000003",
+        "electrical_licence": "QLD 00003",
+        "abn": "11 000 000 003",
+        "years_operating": 12,
+        "verified_on": "2026-05-15",
+        "verified_by": "manual"
+      },
+      "listing": {
+        "featured_slots": [
+          { "zone": "bne-east", "work": "battery", "until": "2026-01-01", "stripe_sub": null }
+        ]
+      },
+      "status": "active"
+    },
+    {
+      "id": "sample-sparks-electrical",
+      "name": "Sample Sparks Electrical",
+      "suburb": "Springwood",
+      "state": "QLD",
+      "base_postcode": "4127",
+      "service_postcodes": { "ranges": [[4000, 4179]] },
+      "work_types": ["battery", "ev_charger"],
+      "phone": "07 3000 0004",
+      "website": "https://example.com/sample-sparks-electrical",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000004",
+        "electrical_licence": "QLD 00004",
+        "abn": "11 000 000 004",
+        "years_operating": 4,
+        "verified_on": "2026-06-20",
+        "verified_by": "manual"
+      },
+      "listing": { "featured_slots": [] },
+      "status": "active"
+    },
+    {
+      "id": "demo-energy-co",
+      "name": "Demo Energy Co",
+      "suburb": "Milton",
+      "state": "QLD",
+      "base_postcode": "4064",
+      "service_postcodes": { "ranges": [[4000, 4179]] },
+      "work_types": ["solar", "battery"],
+      "phone": "07 3000 0005",
+      "website": "https://example.com/demo-energy-co",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000005",
+        "electrical_licence": "QLD 00005",
+        "abn": "11 000 000 005",
+        "years_operating": 15,
+        "verified_on": "2024-05-01",
+        "verified_by": "manual"
+      },
+      "listing": { "featured_slots": [] },
+      "status": "active"
+    },
+    {
+      "id": "example-ev-installs",
+      "name": "Example EV Installs",
+      "suburb": "Hervey Bay",
+      "state": "QLD",
+      "base_postcode": "4655",
+      "service_postcodes": { "ranges": [[4650, 4670]] },
+      "work_types": ["ev_charger", "battery"],
+      "phone": "07 3000 0006",
+      "website": "https://example.com/example-ev-installs",
+      "vetting": {
+        "cec_accredited": true,
+        "accreditation_id": "A0000006",
+        "electrical_licence": "QLD 00006",
+        "abn": "11 000 000 006",
+        "years_operating": 7,
+        "verified_on": "2026-06-01",
+        "verified_by": "manual"
+      },
+      "listing": { "featured_slots": [] },
+      "status": "active"
+    }
+  ]
+}

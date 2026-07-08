@@ -1,0 +1,10 @@
+{
+  "version": "2026-07-09",
+  "note": "PLACEHOLDER hand-drawn SE QLD zones (Phase 1). The real ABS SA3/SA4-scripted map is a Phase 3 deliverable; do not treat these boundaries as final. Ranges are non-overlapping so every postcode maps to at most one zone (design 6.1).",
+  "zones": {
+    "bne-central": { "name": "Brisbane Central & North", "ranges": [[4000, 4079]] },
+    "bne-south": { "name": "Brisbane South & Logan", "ranges": [[4100, 4150]] },
+    "bne-east": { "name": "Brisbane East / Bayside", "ranges": [[4151, 4179]] },
+    "gold-coast": { "name": "Gold Coast", "ranges": [[4207, 4230]] }
+  }
+}
