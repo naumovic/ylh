@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { recommend } from './core/engine.ts';
 import { buildPlan } from './core/report.ts';
 import type { Intake } from './core/types.ts';
@@ -18,6 +18,14 @@ import { initAnalytics, capture } from './lib/analytics.ts';
 
 const UNLOCK_KEY = 'ylh_unlocked';
 const EMAIL_KEY = 'ylh_email';
+
+// Dev-only installer-directory harness (Phase 1). Gated on import.meta.env.DEV so the
+// ternary folds to `null` in production and Rollup drops the dynamic import + its chunk —
+// no directory code or data ships in prod builds. Phase 2 mounts it in the real flow
+// behind VITE_FF_DIRECTORY instead.
+const DevDirectoryPage = import.meta.env.DEV
+  ? lazy(() => import('./directory/DevDirectoryPage.tsx'))
+  : null;
 
 interface UnlockState {
   unlocked: boolean;
@@ -42,6 +50,13 @@ function readUnlockState(): UnlockState {
  *  so a full-page load of /privacy or /terms lands here and renders the right page. */
 export function App() {
   const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (DevDirectoryPage && path === '/dev/directory') {
+    return (
+      <Suspense fallback={null}>
+        <DevDirectoryPage />
+      </Suspense>
+    );
+  }
   if (path === '/privacy') return <PrivacyPage />;
   if (path === '/terms') return <TermsPage />;
   return <MainApp />;
