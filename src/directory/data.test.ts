@@ -9,9 +9,10 @@ import centroidsData from '../data/postcode-centroids.json' with { type: 'json' 
 import type { Centroids, InstallersFile, WorkType, ZonesFile } from './types.ts';
 import { FEATURED_CAP } from './match.ts';
 
-const installersFile = installersData as InstallersFile;
-const zonesFile = zonesData as ZonesFile;
-const centroids = centroidsData as Centroids;
+// JSON imports infer arrays as `number[]`, not tuples — cast through `unknown`.
+const installersFile = installersData as unknown as InstallersFile;
+const zonesFile = zonesData as unknown as ZonesFile;
+const centroids = centroidsData as unknown as Centroids;
 
 const WORK_TYPES: WorkType[] = ['battery', 'solar', 'ev_charger'];
 const STATUSES = ['active', 'paused', 'delisted'];

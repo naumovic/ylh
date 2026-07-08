@@ -63,7 +63,7 @@ describe('deriveServiceRanges', () => {
   });
 
   it('runs against the real centroid table and includes the base postcode', () => {
-    const ranges = deriveServiceRanges('4000', 25, realCentroids as Centroids);
+    const ranges = deriveServiceRanges('4000', 25, (realCentroids as unknown as Centroids));
     expect(ranges.length).toBeGreaterThan(0);
     expect(postcodeInRanges('4000', ranges)).toBe(true);
   });

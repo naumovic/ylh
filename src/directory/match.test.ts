@@ -189,7 +189,7 @@ describe('match — fee-blindness (guardrail 2)', () => {
 });
 
 describe('zoneOf — every postcode maps to exactly one zone', () => {
-  const zones = zonesData as ZonesFile;
+  const zones = zonesData as unknown as ZonesFile;
 
   it('resolves known SE QLD test postcodes to a single zone', () => {
     expect(zoneOf('4000', zones)).toBe('bne-central');
