@@ -15,6 +15,9 @@ import { PrivacyPage, TermsPage } from './pages/legal.tsx';
 import { exportPdf, planPdfBase64 } from './lib/exportPdf.ts';
 import { exportJson } from './lib/exportJson.ts';
 import { initAnalytics, capture } from './lib/analytics.ts';
+import { DIRECTORY_BUNDLE_ENABLED, directoryEnabled } from './lib/flags.ts';
+import type { OptionKey } from './core/types.ts';
+import type { WorkType } from './directory/types.ts';
 
 const UNLOCK_KEY = 'ylh_unlocked';
 const EMAIL_KEY = 'ylh_email';
@@ -26,6 +29,29 @@ const EMAIL_KEY = 'ylh_email';
 const DevDirectoryPage = import.meta.env.DEV
   ? lazy(() => import('./directory/DevDirectoryPage.tsx'))
   : null;
+
+// Installer directory in the real results flow (Phase 2), below the plan gate and behind
+// the feature flag. Same compile-time gate pattern: when DIRECTORY_BUNDLE_ENABLED folds to
+// false (default prod), Rollup drops this dynamic import and all directory data with it.
+const DirectorySection = DIRECTORY_BUNDLE_ENABLED
+  ? lazy(() =>
+      import('./directory/DirectorySection.tsx').then((m) => ({ default: m.DirectorySection })),
+    )
+  : null;
+
+/** The engine's winning option → the directory's work-type filter (null = "do nothing"). */
+function directoryWorkOf(winner: OptionKey): WorkType | null {
+  switch (winner) {
+    case 'battery':
+      return 'battery';
+    case 'solar':
+      return 'solar';
+    case 'ev':
+      return 'ev_charger';
+    default:
+      return null;
+  }
+}
 
 interface UnlockState {
   unlocked: boolean;
@@ -206,6 +232,18 @@ function Result({ intake, unlocked, email, onRefine, onRestart, onUnlocked }: Re
             {new Date().getFullYear()} and may change over time.
           </p>
         </>
+      )}
+
+      {/* Actionability layer — renders below the answer + plan gate, behind the flag.
+          "Do nothing" collapses it behind an explicit click (handled inside the section). */}
+      {DirectorySection && directoryEnabled() && (
+        <Suspense fallback={null}>
+          <DirectorySection
+            postcode={intake.postcode}
+            recommendedWork={directoryWorkOf(rec.winner)}
+            onEvent={capture}
+          />
+        </Suspense>
       )}
 
       {formOpen && (

@@ -31,7 +31,18 @@ const WORK_LABEL: Record<WorkType, string> = {
 };
 const WORK_ORDER: WorkType[] = ['battery', 'solar', 'ev_charger'];
 
-export type DirectoryEvent = (name: string, props?: Record<string, unknown>) => void;
+/** PostHog events for the directory (design §2). Kept as a named union so the real
+ *  analytics layer can type-check that it handles every one. */
+export type DirectoryEventName =
+  | 'directory_viewed'
+  | 'directory_shown_anyway'
+  | 'installer_phone_revealed'
+  | 'installer_site_clicked'
+  | 'featured_impression'
+  | 'featured_clicked'
+  | 'empty_state_waitlist_joined';
+
+export type DirectoryEvent = (name: DirectoryEventName, props?: Record<string, unknown>) => void;
 
 interface DirectorySectionProps {
   postcode: string;
@@ -63,14 +74,20 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
   );
 
   useEffect(() => {
-    if (collapsed) onEvent?.('directory_viewed', { postcode, collapsed: true });
-    else
-      onEvent?.('directory_viewed', {
-        postcode,
-        work: workFilter,
-        featured: featured.length,
-        organic: organic.length,
-      });
+    if (collapsed) {
+      onEvent?.('directory_viewed', { postcode, collapsed: true });
+      return;
+    }
+    onEvent?.('directory_viewed', {
+      postcode,
+      work: workFilter,
+      featured: featured.length,
+      organic: organic.length,
+    });
+    // One pre-qualified impression per featured slot shown (the number that prices the slot).
+    featured.forEach((i, position) =>
+      onEvent?.('featured_impression', { id: i.id, postcode, work: workFilter, position }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collapsed, postcode, workFilter, featured.length, organic.length]);
 
