@@ -4,6 +4,7 @@
 // gate reads them).
 
 import posthog from 'posthog-js';
+import type { DirectoryEventName } from '../directory/DirectorySection.tsx';
 
 const KEY = import.meta.env.VITE_POSTHOG_KEY;
 // `||` (not `??`): an empty-string VITE_POSTHOG_HOST (e.g. the var set-but-blank on
@@ -32,7 +33,9 @@ export type AnalyticsEvent =
   | 'plan_emailed'
   | 'survey_answered'
   | 'founder_reserved'
-  | 'waitlist_joined';
+  | 'waitlist_joined'
+  // Installer directory (design §2) — behind VITE_FF_DIRECTORY, harmless when unset.
+  | DirectoryEventName;
 
 export function capture(event: AnalyticsEvent, props?: Record<string, unknown>): void {
   if (!KEY || !ready) return;

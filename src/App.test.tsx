@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { App } from './App.tsx';
 import { recommend } from './core/engine.ts';
@@ -243,6 +243,23 @@ describe('Privacy / Terms pages', () => {
     const footer = document.querySelector('footer')!;
     expect(footer.querySelector('a[href="/privacy"]')).toBeInTheDocument();
     expect(footer.querySelector('a[href="/terms"]')).toBeInTheDocument();
+  });
+});
+
+// --- Phase 2: directory behind the flag ------------------------------------
+// In tests import.meta.env.DEV is true, so directoryEnabled() is on — the same path a
+// preview/flagged prod deploy takes. It mounts below the plan gate and lazy-loads.
+describe('Installer directory (feature flag)', () => {
+  it('renders below the results once the flag is on (founder → EV work type)', async () => {
+    render(<App />);
+    completeWizard(FOUNDER_WIZARD);
+    // Lazy chunk resolves after the answer is already on screen.
+    const dir = await screen.findByTestId('directory-section');
+    expect(dir).toBeInTheDocument();
+    // Still below the answer: the results panel/options render before it.
+    expect(screen.getByTestId('option-ev')).toBeInTheDocument();
+    // EV win → EV-capable placeholder installer is offered for postcode 4000.
+    expect(within(dir).getByTestId('installer-test-solar-co')).toBeInTheDocument();
   });
 });
 

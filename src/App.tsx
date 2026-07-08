@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { recommend } from './core/engine.ts';
 import { buildPlan } from './core/report.ts';
 import type { Intake } from './core/types.ts';
@@ -15,9 +15,43 @@ import { PrivacyPage, TermsPage } from './pages/legal.tsx';
 import { exportPdf, planPdfBase64 } from './lib/exportPdf.ts';
 import { exportJson } from './lib/exportJson.ts';
 import { initAnalytics, capture } from './lib/analytics.ts';
+import { DIRECTORY_BUNDLE_ENABLED, directoryEnabled } from './lib/flags.ts';
+import type { OptionKey } from './core/types.ts';
+import type { WorkType } from './directory/types.ts';
 
 const UNLOCK_KEY = 'ylh_unlocked';
 const EMAIL_KEY = 'ylh_email';
+
+// Dev-only installer-directory harness (Phase 1). Gated on import.meta.env.DEV so the
+// ternary folds to `null` in production and Rollup drops the dynamic import + its chunk —
+// no directory code or data ships in prod builds. Phase 2 mounts it in the real flow
+// behind VITE_FF_DIRECTORY instead.
+const DevDirectoryPage = import.meta.env.DEV
+  ? lazy(() => import('./directory/DevDirectoryPage.tsx'))
+  : null;
+
+// Installer directory in the real results flow (Phase 2), below the plan gate and behind
+// the feature flag. Same compile-time gate pattern: when DIRECTORY_BUNDLE_ENABLED folds to
+// false (default prod), Rollup drops this dynamic import and all directory data with it.
+const DirectorySection = DIRECTORY_BUNDLE_ENABLED
+  ? lazy(() =>
+      import('./directory/DirectorySection.tsx').then((m) => ({ default: m.DirectorySection })),
+    )
+  : null;
+
+/** The engine's winning option → the directory's work-type filter (null = "do nothing"). */
+function directoryWorkOf(winner: OptionKey): WorkType | null {
+  switch (winner) {
+    case 'battery':
+      return 'battery';
+    case 'solar':
+      return 'solar';
+    case 'ev':
+      return 'ev_charger';
+    default:
+      return null;
+  }
+}
 
 interface UnlockState {
   unlocked: boolean;
@@ -42,6 +76,13 @@ function readUnlockState(): UnlockState {
  *  so a full-page load of /privacy or /terms lands here and renders the right page. */
 export function App() {
   const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (DevDirectoryPage && path === '/dev/directory') {
+    return (
+      <Suspense fallback={null}>
+        <DevDirectoryPage />
+      </Suspense>
+    );
+  }
   if (path === '/privacy') return <PrivacyPage />;
   if (path === '/terms') return <TermsPage />;
   return <MainApp />;
@@ -191,6 +232,18 @@ function Result({ intake, unlocked, email, onRefine, onRestart, onUnlocked }: Re
             {new Date().getFullYear()} and may change over time.
           </p>
         </>
+      )}
+
+      {/* Actionability layer — renders below the answer + plan gate, behind the flag.
+          "Do nothing" collapses it behind an explicit click (handled inside the section). */}
+      {DirectorySection && directoryEnabled() && (
+        <Suspense fallback={null}>
+          <DirectorySection
+            postcode={intake.postcode}
+            recommendedWork={directoryWorkOf(rec.winner)}
+            onEvent={capture}
+          />
+        </Suspense>
       )}
 
       {formOpen && (

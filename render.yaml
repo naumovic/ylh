@@ -22,3 +22,11 @@ services:
         sync: false # e.g. "Your Local Hero <plan@mail.yourlocalhero.com.au>"
       - key: VITE_POSTHOG_KEY
         sync: false # build-time (inlined into the client bundle)
+      # Installer directory (Phase 2). Keep OFF in prod until the Phase-3 organic-release
+      # gate passes — a flag-off build ships no directory code/data. Flip VITE_FF_DIRECTORY
+      # to "on" (dashboard, then redeploy) to launch. VITE_FF_OVERRIDES=on lets you probe a
+      # prod build via ?ff_directory=1 before launch; ship it OFF/unset once live.
+      - key: VITE_FF_DIRECTORY
+        value: "" # off
+      - key: VITE_FF_OVERRIDES
+        value: "" # off

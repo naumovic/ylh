@@ -36,9 +36,23 @@ The app is live on **Render.com** as a **single Node web service**, connected to
   | `RESEND_FROM` | server | Verified sender, e.g. `Your Local Hero <plan@mail.yourlocalhero.com.au>` |
   | `VITE_POSTHOG_KEY` | client (build-time) | PostHog project key (`phc_…`, publishable). Analytics no-ops if unset. |
   | `VITE_POSTHOG_HOST` | client (build-time) | PostHog region host, e.g. `https://us.i.posthog.com` (default) or `https://eu.i.posthog.com` |
+  | `VITE_FF_DIRECTORY` | client (build-time) | `on` renders the installer directory below results. **Leave unset/off in prod** until launch (see Feature flags). |
+  | `VITE_FF_OVERRIDES` | client (build-time) | `on` enables the `?ff_directory=1` runtime override. Ship off/unset once the directory is live. |
 
   If `RESEND_API_KEY`/`RESEND_AUDIENCE_ID` are unset, the service still runs and `/api/unlock` returns `{ ok: true, emailQueued: false }` — it just doesn't store or email.
 - **Domain:** add **yourlocalhero.com.au** (canonical); set **yourlocalhero.app** to 301-redirect to it.
+
+## Feature flags
+No DB, no flag service — flags are **build-time env + a runtime override** (`src/lib/flags.ts`). Currently one flag gates the **installer directory** (a QLD-first list of vetted installers shown below the results; see `docs/installer-directory-build-plan.md`).
+
+- **`VITE_FF_DIRECTORY`** — set to `on` to render the directory in the real results flow. It is **always on in `npm run dev`** (via `import.meta.env.DEV`) and **off in production** unless you set it. Keep it off in prod until the Phase-3 organic-release gate (legal check + real vetted installers) passes.
+- **`VITE_FF_OVERRIDES`** — set to `on` to allow a **runtime override** for probing a prod build before launch: append **`?ff_directory=1`** to any URL to switch the directory on for the session (persists in `sessionStorage`; `?ff_directory=0` clears it). The override is a no-op unless `VITE_FF_OVERRIDES=on`, so once the directory is live for everyone you can ship with overrides off.
+
+Both are `VITE_`-prefixed, so they're **inlined at build time** — changing them means a redeploy (or a fresh `npm run build`), not a runtime toggle.
+
+**Bundle safety:** when both flags are off (default prod), the directory's code and data are behind a compile-time-foldable gate, so Rollup **drops the chunk entirely** — a flag-off build ships zero directory code or data. With `VITE_FF_OVERRIDES=on` the directory becomes a **separate lazy chunk** (`DirectorySection-*.js`), fetched only when the override fires; it's never eager in the main bundle.
+
+**Dev-only harness:** `npm run dev` → **`/dev/directory`** renders the directory in isolation with a scenario switcher (battery / solar / EV / do-nothing) + postcode input + an event toast. This route is gated on `import.meta.env.DEV` and is excluded from production builds.
 
 ### Resend setup (founder, one-time)
 1. Create a Resend account → **Audiences** → create an audience; copy its ID → `RESEND_AUDIENCE_ID`.
