@@ -41,7 +41,7 @@ export function ResultPanel({ rec, unlocked }: Props) {
   return (
     <>
       {/* Headline */}
-      <div className="rounded-xl border border-hairline bg-gradient-to-br from-white to-canvas p-5 mb-4">
+      <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-white to-amber-500/5 p-5 mb-4">
         <div className="text-xs uppercase tracking-wide text-muted">
           Recommended next move{unlocked ? '' : ' · ballpark'}
         </div>

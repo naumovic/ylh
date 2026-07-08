@@ -98,11 +98,14 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
 
   return (
     <section
-      className="mt-6 rounded-xl border border-hairline bg-surface p-5"
+      className="mt-8 rounded-xl border border-navy-900/10 bg-navy-900/[0.035] p-5"
       data-testid="directory-section"
       aria-label="Vetted installers"
     >
-      <h2 className="text-base font-bold text-navy-900">Vetted installers near {postcode}</h2>
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-navy-700/80">
+        Ready to act? · Find an installer
+      </div>
+      <h2 className="mt-0.5 text-base font-bold text-navy-900">Vetted installers near {postcode}</h2>
 
       {collapsed ? (
         <DoNothingCollapse
@@ -129,8 +132,8 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
                 data-testid={`chip-${w}`}
                 className={
                   w === workFilter
-                    ? 'rounded-full border border-amber-500 bg-amber-500 px-3 py-1 text-xs font-semibold text-navy-900'
-                    : 'rounded-full border border-hairline bg-surface px-3 py-1 text-xs text-muted hover:border-navy-700'
+                    ? 'rounded-full border border-navy-900 bg-navy-900 px-3 py-1 text-xs font-semibold text-white'
+                    : 'rounded-full border border-navy-900/15 bg-surface px-3 py-1 text-xs text-navy-700 hover:border-navy-700'
                 }
               >
                 {WORK_LABEL[w]}
@@ -201,7 +204,7 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
 function DoNothingCollapse({ onShow }: { onShow: () => void }) {
   return (
     <div
-      className="mt-3 rounded-lg border border-dashed border-hairline bg-canvas p-4 text-center text-sm text-muted"
+      className="mt-3 rounded-lg border border-dashed border-navy-900/15 bg-surface p-4 text-center text-sm text-muted"
       data-testid="do-nothing-collapse"
     >
       Our advice is <b className="text-ink">do nothing</b> — so we&apos;re not showing you installers.
@@ -294,7 +297,7 @@ function InstallerCard({
             type="button"
             onClick={onReveal}
             data-testid={`reveal-${installer.id}`}
-            className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-navy-900 hover:bg-amber-600"
+            className="rounded-lg bg-navy-900 px-3 py-2 text-sm font-semibold text-white hover:bg-navy-700"
           >
             Show phone
           </button>
@@ -325,7 +328,7 @@ function EmptyState({
   const [email, setEmail] = useState('');
   return (
     <div
-      className="mt-4 rounded-lg border border-dashed border-hairline bg-canvas p-4 text-center text-sm text-muted"
+      className="mt-4 rounded-lg border border-dashed border-navy-900/15 bg-surface p-4 text-center text-sm text-muted"
       data-testid="empty-state"
     >
       {joined ? (
@@ -347,12 +350,12 @@ function EmptyState({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
               aria-label="Email to be notified"
-              className="rounded-lg border border-hairline bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 sm:w-60"
+              className="rounded-lg border border-hairline bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-700/30 sm:w-60"
             />
             <button
               type="submit"
               data-testid="waitlist-notify"
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-navy-900 hover:bg-amber-600"
+              className="rounded-lg bg-navy-900 px-4 py-2 text-sm font-bold text-white hover:bg-navy-700"
             >
               Notify me
             </button>

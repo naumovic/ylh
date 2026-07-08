@@ -42,7 +42,7 @@ export default function DevDirectoryPage() {
           state. Bottom-right toast = the PostHog event that would fire.
         </p>
 
-        <div className="mt-4 rounded-xl border border-hairline bg-surface p-4">
+        <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-4">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-muted">
             Prototype controls — simulate the engine result
           </div>
@@ -82,7 +82,7 @@ export default function DevDirectoryPage() {
         </div>
 
         {/* Result-context banner — stands in for the real ranked answer + plan gate. */}
-        <div className="mt-4 rounded-xl border border-hairline bg-gradient-to-br from-canvas to-surface p-4">
+        <div className="mt-4 rounded-xl border border-amber-500/30 bg-gradient-to-br from-white to-amber-500/5 p-4">
           <div className="text-[11px] uppercase tracking-wide text-muted">Your result</div>
           <div className="mt-1 text-lg font-bold text-navy-900">{active.big}</div>
           <div className="text-sm text-muted">{active.why}</div>
