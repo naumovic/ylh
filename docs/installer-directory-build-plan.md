@@ -1,16 +1,14 @@
 ---
 tags:
   - 01_Projects/battery-advisor
-created: 2026-07-09
+ewok: 2026-07-12
 ---
 # Installer Directory — Claude Code Build Plan
 
-**Status:** v1, 9 Jul 2026. Phased structure per founder decision: scaffolding → flag → organic release → featured release.
-**Spec:** `installer-directory-design.md` (v2). Reference implementation of matching: `installer-directory-prototype.html` → `match()`.
+**Status:** v2, 13 Jul 2026. Phase 3 reshaped as the **Brisbane seed slice** (12 real Reddit-sourced candidates, desk-vet entry path, installer/retailer badge). v1: 9 Jul 2026.
+**Spec:** [[installer-directory-design]] (v3 — see §9 for the Brisbane seed launch + `company_type` split). Reference implementation of matching: `installer-directory-prototype.html` → `match()`.
 **Workflow:** copy this file into the WSL repo's `docs/` and drive Claude Code from it, phase by phase. Each phase has exit criteria; don't start the next until they pass.
 **Principle:** phases 1–2 are code (cheap, reversible, 4A-outcome-invariant — build any time on a branch). Phases 3–4 involve commitments (installer calls, invoices, legal) — their *human* prerequisites wait for the 4A go/no-go signal.
-
-**Progress:** ✅ **Phase 1 + Phase 2 built** on branch `feature/installer-directory` (9 Jul 2026). Directory renders below the results behind `VITE_FF_DIRECTORY` (on in dev, off in prod); dev harness at `/dev/directory`; 193 tests green; flag-off prod bundle verified to ship zero directory code/data. **Next code:** Phase 3 (real ABS zone map + waitlist→Resend + disclosure/privacy copy). **Blocking human gates before any prod flag-on:** legal check + first vetted installers (see "Outstanding founder actions" at the bottom). See the per-phase checkboxes below for detail.
 
 ---
 
@@ -18,49 +16,73 @@ created: 2026-07-09
 
 Branch: `feature/installer-directory`. Nothing in this phase touches the results page.
 
-- [x] `src/data/zones.json` — placeholder: 4 non-overlapping SE QLD zones (`bne-central`, `bne-south`, `bne-east`, `gold-coast`). Real ABS map deferred to Phase 3.
-- [x] `src/data/postcode-centroids.json` — real data (Matthew Proctor CSV, localities averaged per postcode). **Filtered to QLD** (452 codes, 14 KB raw / 4 KB gz — trivial; full-AU was ~10× for no Phase-1 benefit). Re-source national coverage when the directory expands past QLD. Provenance in `src/data/README.md`.
-- [x] `src/data/installers.json` — design §3 slot schema, 6 fake-named placeholders covering every case (valid slot, expired slot, free-tier, stale vetting, out-of-area, cap-filling second slot-holder).
-- [x] `src/directory/match.ts` — port of the prototype `match()` onto the slot schema. Pure over its inputs. Boundary enforced by `boundary.test.ts` (grep-style CI check — **no ESLint is configured in this repo**, so the equivalent CI test is used; proven to fail on a bad import).
-- [x] `src/directory/serviceArea.ts` — haversine distance + `deriveServiceRanges(base, radius)`.
-- [x] Unit tests (`match.test.ts`, `serviceArea.test.ts`): ordering, cap ≤2, no double-listing, expiry lapse, vetting freshness, zone resolution, radius derivation, fee-blindness.
-- [x] CI invariants (`data.test.ts`): ≤2 active slots per zone×work, slots reference existing zones, dates parse, valid `status`, unique ids, ranges well-formed, base postcodes in centroid table, zones non-overlapping.
-- [x] `<DirectorySection>` (design §2 anatomy) on a **dev-only route `/dev/directory`** (`DevDirectoryPage`, gated on `import.meta.env.DEV`) with the prototype's scenario switcher + postcode input + event toast. Component smoke test in `DirectorySection.test.tsx`.
+- [ ] `src/data/zones.json` — schema per design §6.1. **Placeholder**: 3–4 hand-drawn SE QLD zones with postcode ranges is fine; the ABS-scripted real map is a Phase-3 item (and waits for 4A geography data — traffic may say the first zones aren't even in QLD).
+- [ ] `src/data/postcode-centroids.json` — real data, one-time download (ABS POA centroids or Matthew Proctor CSV). Small enough to bundle; verify gzipped size is trivial.
+- [ ] `src/data/installers.json` — schema per design §3 (slot-based `featured_slots`, **`company_type: installer|retailer|unknown` per design §9.2**). **Placeholder installers with obviously fake names** ("Test Solar Co") so a leaked build can't defame anyone real — include at least one of each `company_type` so the badge renders in dev.
+- [ ] `src/directory/match.ts` — port `match()` from the prototype. **Location guardrail: a new `directory/` module, sibling to `core/`. `core/` must never import from `directory/` — add an ESLint boundary rule or a CI grep, don't rely on discipline.**
+- [ ] `src/directory/serviceArea.ts` — derive postcode list from `base_postcode` + `radius_km` via centroid haversine (design §3); used at data-authoring time and by tests.
+- [ ] Unit tests (Vitest, same pattern as `core`): match ordering (distance → years, fee-blind), featured cap ≤2, featured excluded from organic (no double-listing), expiry lapse (`until` in past ⇒ organic), vetting freshness (>12 months ⇒ omitted), zone resolution (postcode → exactly one zone), radius derivation.
+- [ ] CI invariant checks on the JSON itself: ≤2 active slots per zone×work-type, slots reference existing zones, dates parse, every installer `status` valid, **`company_type` is a valid enum value**. Run on every PR — this is what makes hand-edited data safe.
+- [ ] `<DirectorySection>` React component (design §2 anatomy: chips, featured strip, organic cards, do-nothing collapse, click-to-reveal, empty state, disclosure footer, **company-type badge + "Two ways to buy" explainer popover per design §9.2 — `unknown` renders no badge**) — rendered only on a **dev-only route** (e.g. `/dev/directory`) with scenario controls like the prototype's. Not mounted in the real flow yet.
+- [ ] Unit test: organic comparator is `company_type`-blind (same blindness clause as fees — design §9.2 guardrail).
 
-**Exit criteria — MET:** 193 tests + typecheck green; `/dev/directory` renders all four scenarios + empty state (postcode 4870) from placeholder data; `core/` has no import path to `directory/` (enforced + proven); prod build excludes the dev route and all directory data.
+**Exit criteria:** all tests + CI invariants green; dev route renders all four scenarios (battery/solar/EV/do-nothing) and the empty state from placeholder data; `core/` has no import path to `directory/` (enforced, not assumed).
 
 ## Phase 2 — Feature flag
 
-No DB and no flag service — flags are build-time env + runtime override (`src/lib/flags.ts`):
+No DB and no flag service — flags are build-time env + runtime override:
 
-- [x] `VITE_FF_DIRECTORY` env var: on in dev (auto, via `import.meta.env.DEV`), `off` in production. **Note: hosting is Render, not Vercel** — set in the Render dashboard / `render.yaml` (added, value `""` = off). "Preview" = a Render branch/preview deploy with the var set to `on`.
-- [x] Runtime override `?ff_directory=1` (persists to `sessionStorage`; `?ff_directory=0` clears), gated on `VITE_FF_OVERRIDES=on` — no-op once prod ships with overrides off.
-- [x] `<DirectorySection>` mounted in the real results flow **below the plan gate** (`App.tsx` `Result`), behind `directoryEnabled()`. Lazy `import()` behind a compile-time-foldable gate (`DIRECTORY_BUNDLE_ENABLED`): flag-off prod ⇒ zero DOM, zero data, Rollup drops the chunk. Winner→work-type: battery→battery, solar→solar, ev→ev_charger, nothing→null (collapses).
-- [x] PostHog events per design §2 wired via the section's `onEvent` → `capture` (`analytics.ts` `AnalyticsEvent` extended with `DirectoryEventName`, incl. `featured_impression`). No-ops without a PostHog key; the dev harness shows them as a toast.
+- [ ] `VITE_FF_DIRECTORY` env var: `on` in dev (and Render PR previews if that add-on is enabled), `off` in production. Without previews, test locally via `npm run dev` or on prod with the override below.
+- [ ] Runtime override for testing prod builds: `?ff_directory=1` query param (persist to `sessionStorage` for the session). Override works only when a second env var `VITE_FF_OVERRIDES=on` — so prod can ship with overrides disabled once launched.
+- [ ] Mount `<DirectorySection>` in the real results flow **below the plan gate**, wrapped in the flag. Flag off ⇒ zero DOM, zero data fetched (the JSON imports must be lazy/dynamic so flagged-off prod bundles don't ship directory data).
+- [ ] PostHog events per design §2 wired (they're harmless behind the flag and let preview testing validate the funnel shape).
 
-**Exit criteria — MET:** flag-off prod build ships no directory data (grep of `dist/assets` clean); with `VITE_FF_OVERRIDES=on` the directory is a *separate lazy chunk* (`DirectorySection-*.js`), absent from the eager main bundle; flag-on renders the directory below real engine results (App integration test); toggling = env change + redeploy only. Tests: `flags.test.ts` + the directory suites.
+**Exit criteria:** production build with flag off is byte-identical in behaviour to today (bundle diff shows no directory data); preview deploy shows the full directory below real engine results; toggling requires only an env change + redeploy.
 
-## Phase 3 — Release: organic (MVP for all organic listings)
+## Phase 3 — Release: organic, Brisbane seed slice (reshaped 13 Jul 2026)
 
-Code first, then the human gate, then flag on.
+Code first, then the desk-vet + legal gate, then flag on. Launch shape per design §9: Brisbane/SE QLD real data, organic-only, everywhere else = existing empty state ("coming soon" + waitlist). Unlock untouched.
 
 Code:
-- [ ] Replace placeholder zones with the scripted ABS zone map — **draw where 4A traffic actually is**, not where we assumed (check PostHog postcode distribution first).
+- [ ] ~~Replace placeholder zones with ABS map~~ **Deferred (design §9.4):** zones are featured-billing inventory only; organic matching is postcode-level. Placeholder zones stay until the first featured conversation.
 - [ ] Empty-state waitlist wired to Resend Audiences (reuse the 4A endpoint pattern; tag contacts `directory-waitlist` + postcode).
-- [ ] Disclosure copy finalised (design §2 footer) + privacy policy updated to cover the waitlist (names processors — same obligation 4A already triggered).
+- [ ] Disclosure copy finalised (design §2 footer + §9.2 explainer) + privacy policy updated to cover the waitlist (names processors — same obligation 4A already triggered).
 - [ ] Featured strip stays dormant automatically (no `featured_slots` in data = no strip — the organic-only launch gate from design §6.2 needs no code).
 
-Human prerequisites (the pacing items — start only on a 4A pass or a conscious decision to proceed regardless):
-- [ ] Legal check on listing obligations (**hard gate before flag-on in prod**).
-- [ ] Vetting criteria confirmed (design §4) and first founding installers called: vetting checks + base postcode + radius + work types → `installers.json` via `serviceArea.ts`, PR per installer (audit trail).
+Desk work (one afternoon — design §4 desk-vet tier, §9.3 runbook):
+- [ ] Fill the candidate table below from public registers: ABR (ABN active; registration date ≈ years operating), SAA register (installers) / NETCC register (retailers), QLD electrical contractor licence lookup, QBCC + Fair Trading disciplinary search, work types + base suburb + estimated radius from website. Classify `company_type`; use `unknown` when the website doesn't make the delivery model clear — never guess.
+- [ ] Passing rows → `installers.json` via `serviceArea.ts`, **one PR per company** (audit trail). Failing rows dropped, reason noted in the table.
 
-**Exit criteria:** ≥ N real vetted installers live (pick N, suggest ≥5 so the list isn't embarrassing); legal check done; flag on in production; `directory_viewed` / `installer_phone_revealed` events flowing.
+### Brisbane seed candidates (sourced from one Brisbane Reddit thread, 13 Jul 2026 — desk-vet is the entry filter)
+
+| # | Website | Name (confirm) | company_type | SAA/NETCC | QLD lic. | ABN ok | ≥2 yrs | Work types | Base | Pass? |
+|---|---------|----------------|--------------|-----------|----------|--------|--------|-----------|------|-------|
+| 1 | reasolar.com.au | | | | | | | | | |
+| 2 | levelau.com.au | (Arundel/Gold Coast) | | | | | | | | |
+| 3 | springers.com.au | | | | | | | | | |
+| 4 | positronicsolar.com.au | | | | | | | | | |
+| 5 | halcolenergy.com.au | | | | | | | | | |
+| 6 | expertelectrical.com.au | | | | | | | | | |
+| 7 | paramountenergy.com.au | | | | | | | | | |
+| 8 | green.com.au | | | | | | | | | |
+| 9 | djedwardselectrical.com.au | | | | | | | | | |
+| 10 | mcelectrical.com.au | | | | | | | | | |
+| 11 | lmselectrical.com.au | | | | | | | | | |
+| 12 | gienergy.com.au | | | | | | | | | |
+
+Notes: several candidates are Gold Coast / Sunshine Coast rather than Brisbane proper — fine, scope is SE QLD and distance ordering handles it. Selection bias (one thread) is acceptable: Reddit is the sourcing filter, desk-vet is the entry filter.
+
+Human prerequisite (the one non-code, non-desk blocker):
+- [ ] Legal check on listing obligations (**hard gate before flag-on in prod** — MORE urgent now that real businesses are named, not less).
+
+**Exit criteria:** ≥5 desk-vetted companies live in `installers.json` with correct `company_type` (or `unknown`); legal check done; flag on in production for Brisbane postcodes; `directory_viewed` / `installer_phone_revealed` events flowing; non-SEQ postcodes show the waitlist empty state.
 
 ## Phase 4 — Release: featured (MVP for onboarding featured listings)
 
 All consumer-side code already exists (built in Phase 1, dormant). This phase is operational:
 
-- [ ] Sales one-pager for the vetting call: A$99/slot/quarter founding, free first quarter offerable selectively, "featured only when our engine recommends your work type in your zone — every impression pre-qualified", zero exposure on do-nothing results (honesty as pitch).
+- [ ] **Real ABS zone map** (moved here from Phase 3, 13 Jul 2026): draw where 4A/directory traffic actually is (check PostHog postcode distribution first). Needed before selling the first slot, not before organic launch.
+- [ ] Sales one-pager for the vetting call: A$99/slot/quarter founding, free first quarter offerable selectively, "featured only when our engine recommends your work type in your zone — every impression pre-qualified", zero exposure on do-nothing results (honesty as pitch). **The call also deepens vetting** (design §4 desk-vet tier): confirm radius, work types, listing terms, and resolve any `company_type: unknown`.
 - [ ] Manual invoicing runbook (design §6.4 v1): Stripe Payment Link per slot → on payment, edit `featured_slots.until` to quarter end → PR (CI invariants catch cap violations) → deploy. First merged slot turns the strip on — no launch code.
 - [ ] Monthly stats email job (Claw back-office): per-installer views, phone reveals, and work-type win-rate in their zone, from PostHog API. This is the renewal engine — ship it the same month as the first paid slot, not later.
 - [ ] Re-verification job (Claw): CEC/licence/ABN register checks → `verified_on` updates, failures flagged. (Can lag, but must exist before the first `verified_on` turns 12 months old.)
@@ -78,44 +100,4 @@ All consumer-side code already exists (built in Phase 1, dormant). This phase is
 4. Directory renders below the answer; do-nothing collapses it behind explicit user action.
 5. No per-lead, per-click, per-reveal billing; no auctions; no user data transmitted to installers.
 6. Expiry lives in data (`until`) — lapse must require zero code to take effect.
-
----
-
-## Outstanding founder actions (as of 9 Jul 2026 — Phases 1–2 done)
-
-The code is ready and dormant. Nothing below is a code task; these are the human gates that
-pace Phases 3–4. **None blocks merging the branch** — prod ships with the flag off, so `main`
-behaviour is unchanged.
-
-### Do now (cheap, unblocks review)
-- [ ] **Review + merge `feature/installer-directory` → `main`.** Safe: flag-off prod is verified
-  to ship no directory code/data. Merging just lands the dormant scaffolding and the dev route.
-- [ ] **Eyeball it:** `npm run dev` → `/dev/directory` (scenario switcher) and `/` → complete the
-  wizard to see it below a real result. Try postcodes 4000 / 4157 / 4215 / 4870 (empty state).
-
-### Before turning the directory ON in production (Phase 3 — hard gates)
-- [ ] **Legal check on listing obligations** (referral/agency? disclosure sufficiency?). *Hard gate
-  before any prod flag-on.* Design §4 open question; disclosure copy already drafted to help.
-- [ ] **Confirm vetting criteria** (design §4) — the entry bar you'll actually check per installer.
-- [ ] **Source + call ≥5 founding QLD installers**, vet them, capture base postcode + travel radius
-  + work types → one PR per installer into `installers.json` (audit trail). Replaces the fake
-  placeholders. `serviceArea.deriveServiceRanges()` turns "base + radius" into the range list.
-- [ ] **Privacy policy update** naming processors, *before* the empty-state waitlist collects any
-  email (same Resend-Audiences obligation 4A already triggered).
-- [ ] **Draw the real SE QLD zone map** (Phase 3 code) — but decide the boundaries *from PostHog
-  postcode distribution*, i.e. after 4A traffic exists. The 4 current zones are placeholders.
-
-### To actually launch (once the gates above pass)
-- [ ] Render dashboard → set **`VITE_FF_DIRECTORY=on`** → redeploy. That's the whole switch.
-- [ ] To probe the prod build *before* launch: set **`VITE_FF_OVERRIDES=on`**, visit any page with
-  **`?ff_directory=1`**. Set it back to off/unset once the directory is live for everyone.
-
-### Phase 4 (featured slots) — all operational, code already built & dormant
-- [ ] Only when you have a paying installer: sales one-pager, manual Stripe Payment Link invoicing,
-  edit `featured_slots.until` → PR (CI catches cap violations) → deploy. First merged slot turns
-  the strip on with no launch code. Monthly stats email + re-verification jobs per Phase 4 below.
-
-### Housekeeping (minor)
-- [ ] `CLAUDE.md` references the prototype at `docs/reference/installer-directory-prototype.html`,
-  but it currently lives at `docs/installer-directory-prototype.html` (untracked). Move it into
-  `docs/reference/` (and `git add` it) or fix the path — pick one so the reference resolves.
+7. Badge + explainer copy stays **neutral between installer and retailer**; organic comparator is `company_type`-blind (design §9.2). `unknown` renders no badge — never guess a company's delivery model in public.

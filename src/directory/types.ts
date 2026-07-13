@@ -5,6 +5,15 @@
 export type WorkType = 'battery' | 'solar' | 'ev_charger';
 export type InstallerStatus = 'active' | 'paused' | 'delisted';
 
+/**
+ * Who does the physical install (design §9.2) — defined by delivery model, not company size:
+ *   installer — in-house SAA-accredited crews do the work.
+ *   retailer  — sells the system, subcontracts the install to accredited third parties.
+ *   unknown   — can't confirm from desk research; render NO badge (never guess in public).
+ * Display-only + a blindness clause: the organic comparator must never reference it.
+ */
+export type CompanyType = 'installer' | 'retailer' | 'unknown';
+
 /** Inclusive numeric postcode range, e.g. [4000, 4179]. */
 export type PostcodeRange = [number, number];
 
@@ -23,7 +32,7 @@ export interface Vetting {
   abn?: string;
   years_operating: number;
   verified_on: string; // ISO date; drives freshness — >12 months old ⇒ omitted from results
-  verified_by: 'manual' | 'openclaw-job';
+  verified_by: 'manual' | 'openclaw-job' | 'desk'; // 'desk' = register-only v1 entry path (design §4)
 }
 
 export interface Installer {
@@ -34,6 +43,7 @@ export interface Installer {
   base_postcode: string; // for distance calc
   service_postcodes: { ranges: PostcodeRange[] };
   work_types: WorkType[];
+  company_type: CompanyType; // design §9.2 — drives the card badge, never the ordering
   phone: string;
   website: string;
   vetting: Vetting;

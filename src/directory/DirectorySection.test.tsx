@@ -66,4 +66,45 @@ describe('DevDirectoryPage — scenarios render from placeholder data', () => {
     fireEvent.click(screen.getByTestId('reveal-test-solar-co'));
     expect(screen.getByTestId('phone-test-solar-co')).toHaveTextContent('07 3000 0001');
   });
+
+  it('company-type badge: installer/retailer show a badge, unknown shows none (§9.2)', () => {
+    render(<DevDirectoryPage />);
+    setPostcode('4157'); // test-solar-co (installer), mock-battery-co (retailer), placeholder-power-co (unknown)
+    const section = screen.getByTestId('directory-section');
+    expect(within(section).getByTestId('company-badge-test-solar-co')).toHaveTextContent('Local installer');
+    expect(within(section).getByTestId('company-badge-mock-battery-co')).toHaveTextContent(
+      'Retailer — uses contracted installers',
+    );
+    // unknown company renders NO badge — we never guess the delivery model in public.
+    expect(within(section).getByTestId('installer-placeholder-power-co')).toBeInTheDocument();
+    expect(within(section).queryByTestId('company-badge-placeholder-power-co')).toBeNull();
+  });
+
+  it('"Two ways to buy" explainer opens from a badge ⓘ as a modal and closes again', () => {
+    render(<DevDirectoryPage />);
+    setPostcode('4157');
+    expect(screen.queryByTestId('two-ways-explainer')).toBeNull();
+    fireEvent.click(screen.getByTestId('badge-info-test-solar-co'));
+    const explainer = screen.getByTestId('two-ways-explainer');
+    // Centred modal dialog (portaled to body so it's in view from any card).
+    expect(explainer).toHaveAttribute('role', 'dialog');
+    expect(explainer).toHaveAttribute('aria-modal', 'true');
+    expect(explainer).toHaveTextContent(/Two ways to buy/i);
+    expect(explainer).toHaveTextContent(/SAA-accredited installers for your rebates/i);
+    fireEvent.click(screen.getByTestId('two-ways-close'));
+    expect(screen.queryByTestId('two-ways-explainer')).toBeNull();
+  });
+
+  it('the explainer modal closes on backdrop click and on Escape', () => {
+    render(<DevDirectoryPage />);
+    setPostcode('4157');
+
+    fireEvent.click(screen.getByTestId('badge-info-test-solar-co'));
+    fireEvent.click(screen.getByTestId('two-ways-overlay')); // click the backdrop
+    expect(screen.queryByTestId('two-ways-explainer')).toBeNull();
+
+    fireEvent.click(screen.getByTestId('badge-info-test-solar-co'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByTestId('two-ways-explainer')).toBeNull();
+  });
 });

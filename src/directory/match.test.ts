@@ -30,6 +30,7 @@ function inst(p: {
   verified?: string;
   status?: Installer['status'];
   ranges?: [number, number][];
+  company?: Installer['company_type'];
 }): Installer {
   return {
     id: p.id,
@@ -39,6 +40,7 @@ function inst(p: {
     base_postcode: p.base,
     service_postcodes: { ranges: p.ranges ?? [[4151, 4179]] },
     work_types: p.work ?? ['battery'],
+    company_type: p.company ?? 'installer',
     phone: '07 0000 0000',
     website: 'https://example.com',
     vetting: {
@@ -184,6 +186,26 @@ describe('match — fee-blindness (guardrail 2)', () => {
         : i,
     );
     const orderAfter = run(withSlot).organic.map((i) => i.id);
+    expect(orderAfter).toEqual(orderBefore);
+  });
+});
+
+describe('match — company_type-blindness (guardrail 7, design §9.2)', () => {
+  it('changing company_type never reorders organic', () => {
+    const base = [
+      inst({ id: 'a', base: '4161', company: 'installer' }),
+      inst({ id: 'b', base: '4162', company: 'installer' }),
+      inst({ id: 'c', base: '4163', company: 'installer' }),
+    ];
+    const orderBefore = run(base).organic.map((i) => i.id);
+
+    // Flip every company_type (installer → retailer → unknown). Delivery model is a
+    // display-only badge; it must never touch ordering.
+    const flipped = base.map((i, idx) => ({
+      ...i,
+      company_type: (['retailer', 'unknown', 'retailer'] as const)[idx],
+    }));
+    const orderAfter = run(flipped).organic.map((i) => i.id);
     expect(orderAfter).toEqual(orderBefore);
   });
 });

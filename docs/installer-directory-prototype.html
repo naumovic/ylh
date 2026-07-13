@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installer Directory — prototype</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212e; --panel2:#1d2a3a; --line:#2a3a4d;
+    --ink:#e8eef5; --muted:#9fb1c4; --accent:#f5b301; --accent2:#3fb6ff;
+    --good:#46c98b; --warn:#ffb454; --bad:#ff6b6b; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--ink);padding:24px;}
+  h1{font-size:22px;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px;max-width:760px}
+  .wrap{max-width:760px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 12px}
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,select{padding:9px 10px;background:var(--panel2);border:1px solid var(--line);
+               border-radius:8px;color:var(--ink);font-size:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .chip{padding:6px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+        font-size:12px;cursor:pointer;user-select:none}
+  .chip.on{background:var(--accent);color:#1a1a1a;border-color:var(--accent);font-weight:600}
+  .scen{padding:7px 11px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+        font-size:12px;cursor:pointer;color:var(--accent2)}
+  .scen.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+
+  /* result-context banner */
+  .headline{background:linear-gradient(135deg,#1d2a3a,#16212e);border:1px solid var(--line);
+            border-radius:var(--radius);padding:18px;margin-bottom:14px}
+  .headline .tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .headline .big{font-size:20px;font-weight:700;margin:4px 0 6px}
+  .headline .why{color:var(--muted);font-size:14px}
+
+  /* directory */
+  .dir-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .trust{font-size:12px;color:var(--muted);margin:4px 0 12px;line-height:1.5}
+  .inst{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--panel2);position:relative}
+  .inst.feat{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:rgba(245,179,1,.05)}
+  .feat-tag{position:absolute;top:-9px;right:12px;background:var(--accent);color:#1a1a1a;font-size:10px;
+            font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:10px;cursor:help}
+  .inst .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .inst .name{font-weight:700;font-size:15px}
+  .inst .dist{font-size:13px;color:var(--muted);white-space:nowrap}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .pill{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+  .pill.good{background:rgba(70,201,139,.16);color:var(--good)}
+  .pill.info{background:rgba(63,182,255,.14);color:var(--accent2)}
+  .pill.dim{background:rgba(159,177,196,.14);color:var(--muted);font-weight:500}
+  .inst .meta{font-size:13px;color:var(--muted)}
+  .acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .acts button,.acts a{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
+        border:1px solid var(--line);background:var(--panel);color:var(--accent2);text-decoration:none}
+  .acts button.primary{background:var(--accent);color:#1a1a1a;border-color:var(--accent)}
+  .phone-shown{font-weight:700;color:var(--ink);padding:8px 12px;border:1px dashed var(--good);border-radius:8px;font-size:13px}
+
+  .strip-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:14px 0 8px}
+  .org-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:16px 0 8px}
+
+  /* do-nothing collapse */
+  .nothing{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:14px}
+  .nothing button{margin-top:10px;padding:9px 14px;background:var(--panel2);border:1px solid var(--line);
+                  border-radius:8px;color:var(--accent2);font-size:13px;cursor:pointer}
+
+  .empty{border:1px dashed var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--muted);font-size:14px}
+  .empty input{margin-top:10px;width:240px}
+  .empty button{margin-top:10px;margin-left:8px;padding:9px 14px;background:var(--accent);border:none;
+                border-radius:8px;color:#1a1a1a;font-weight:700;font-size:13px;cursor:pointer}
+
+  .disc{font-size:11.5px;color:var(--muted);margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;line-height:1.6}
+  .disc b{color:var(--ink)}
+  .evt{position:fixed;bottom:12px;right:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+       padding:8px 12px;font-size:11px;color:var(--accent2);max-width:300px;opacity:0;transition:opacity .3s}
+  .evt.show{opacity:1}
+</style>
+</head>
+<body>
+  <h1>Installer Directory <span style="color:var(--muted);font-weight:400">— prototype</span></h1>
+  <div class="sub">This section renders <b>below</b> the ranked answer (and below the plan gate). Use the scenario switcher to see how it adapts — especially the “do nothing” case. Try postcode <b>4870</b> (Cairns) for the empty state. Bottom-right toast = the PostHog event that would fire.</div>
+
+  <div class="wrap">
+    <!-- CONTROLS (prototype-only) -->
+    <div class="card">
+      <h2>Prototype controls — simulate the engine result</h2>
+      <div class="row">
+        <div>
+          <label>Scenario (what the engine recommended)</label>
+          <div class="chips">
+            <button class="scen on" data-s="battery">Battery wins</button>
+            <button class="scen" data-s="solar">More solar wins</button>
+            <button class="scen" data-s="ev">EV daytime charging</button>
+            <button class="scen" data-s="nothing">Do nothing</button>
+          </div>
+        </div>
+        <div><label>Postcode</label><input id="postcode" value="4000" size="8"></div>
+      </div>
+    </div>
+
+    <!-- RESULT CONTEXT BANNER -->
+    <div class="headline" id="banner"></div>
+
+    <!-- DIRECTORY -->
+    <div class="card" id="directory"></div>
+  </div>
+
+  <div class="evt" id="evt"></div>
+
+<script>
+/* ---------- data: mirrors installers.json schema in installer-directory-design.md ---------- */
+const INSTALLERS = [
+  { id:"sunward-electrical", name:"Sunward Electrical", suburb:"Capalaba", state:"QLD", base_postcode:4157,
+    ranges:[[4000,4179],[4200,4230]], work:["battery","solar","ev_charger"],
+    phone:"07 3390 1234", website:"#",
+    vetting:{cec:true, licence:"QLD 74125", years:9, verified:"2026-07-01"},
+    listing:{tier:"featured", until:"2026-10-01"} },
+  { id:"brisbane-solar-co", name:"Brisbane Solar Co", suburb:"Milton", state:"QLD", base_postcode:4064,
+    ranges:[[4000,4179]], work:["solar","battery"],
+    phone:"07 3811 5566", website:"#",
+    vetting:{cec:true, licence:"QLD 68201", years:12, verified:"2026-06-15"},
+    listing:{tier:"free"} },
+  { id:"voltify", name:"Voltify Energy", suburb:"Springwood", state:"QLD", base_postcode:4127,
+    ranges:[[4000,4230]], work:["battery","ev_charger"],
+    phone:"07 3208 9900", website:"#",
+    vetting:{cec:true, licence:"QLD 81440", years:5, verified:"2026-06-28"},
+    listing:{tier:"featured", until:"2026-09-01"} },
+  { id:"bayside-batteries", name:"Bayside Batteries & Solar", suburb:"Wynnum", state:"QLD", base_postcode:4178,
+    ranges:[[4000,4179]], work:["battery","solar"],
+    phone:"07 3396 2211", website:"#",
+    vetting:{cec:true, licence:"QLD 55917", years:7, verified:"2026-05-20"},
+    listing:{tier:"free"} },
+  { id:"northside-ev", name:"Northside EV & Electrical", suburb:"Chermside", state:"QLD", base_postcode:4032,
+    ranges:[[4000,4179]], work:["ev_charger","battery"],
+    phone:"07 3350 7788", website:"#",
+    vetting:{cec:true, licence:"QLD 90213", years:4, verified:"2026-07-03"},
+    listing:{tier:"free"} },
+  { id:"goldcoast-green", name:"Gold Coast Green Power", suburb:"Southport", state:"QLD", base_postcode:4215,
+    ranges:[[4207,4230]], work:["solar","battery","ev_charger"],
+    phone:"07 5591 3344", website:"#",
+    vetting:{cec:true, licence:"QLD 47762", years:11, verified:"2026-06-01"},
+    listing:{tier:"featured", until:"2026-08-01"} },
+];
+
+/* tiny postcode→approx coords table (prototype); real app bundles a full centroid table */
+const PC = {4000:[-27.47,153.03],4032:[-27.39,153.03],4064:[-27.47,153.00],4127:[-27.61,153.13],
+            4157:[-27.52,153.20],4178:[-27.44,153.17],4215:[-27.97,153.41],4870:[-16.92,145.77]};
+function coords(pc){ if(PC[pc]) return PC[pc];
+  const keys=Object.keys(PC).map(Number); let best=keys[0];
+  for(const k of keys) if(Math.abs(k-pc)<Math.abs(best-pc)) best=k; return PC[best]; }
+function distKm(a,b){ const [la1,lo1]=coords(a),[la2,lo2]=coords(b);
+  const R=6371,d2r=Math.PI/180,dla=(la2-la1)*d2r,dlo=(lo2-lo1)*d2r;
+  const h=Math.sin(dla/2)**2+Math.cos(la1*d2r)*Math.cos(la2*d2r)*Math.sin(dlo/2)**2;
+  return Math.round(2*R*Math.asin(Math.sqrt(h))); }
+
+const SCEN = {
+  battery:{ big:"Add a battery (≈13 kWh)", why:"Payback ≈ 6.1 yrs at your usage. Federal rebate applies.", work:"battery", tag:"Your result" },
+  solar:{ big:"Upgrade your solar (6.6 → 10 kW)", why:"Your daytime load outgrew the array; export is minimal.", work:"solar", tag:"Your result" },
+  ev:{ big:"Charge your EV in the daytime", why:"Your surplus covers ~13 kWh/day — no hardware needed, but a smart charger helps.", work:"ev_charger", tag:"Your result" },
+  nothing:{ big:"Do nothing — your setup is already optimal", why:"A battery would take 14+ years to pay back at your usage. Keep exporting.", work:null, tag:"Your result" },
+};
+let scenario="battery", workFilter="battery", showAnyway=false;
+
+/* ---------- matching: deterministic, fee-blind organic ordering (design doc §3) ---------- */
+function match(pc, work){
+  const now=new Date("2026-07-08");
+  const cand=INSTALLERS.filter(i =>
+    i.work.includes(work) &&
+    i.ranges.some(([a,b])=>pc>=a&&pc<=b) &&
+    (now - new Date(i.vetting.verified)) < 365*864e5
+  ).map(i=>({...i, dist:distKm(pc,i.base_postcode)}));
+  const featured=cand.filter(i=>i.listing.tier==="featured" && now<new Date(i.listing.until))
+                     .sort((a,b)=>a.dist-b.dist).slice(0,2);              // CAP: 2
+  const fIds=new Set(featured.map(i=>i.id));
+  const organic=cand.filter(i=>!fIds.has(i.id))
+                    .sort((a,b)=>a.dist-b.dist || b.vetting.years-a.vetting.years); // fee never enters
+  return {featured, organic};
+}
+
+/* ---------- events (stand-in for PostHog) ---------- */
+let evtT; function evt(name,props){ const el=document.getElementById("evt");
+  el.textContent=`posthog: ${name} ${props?JSON.stringify(props):""}`;
+  el.classList.add("show"); clearTimeout(evtT); evtT=setTimeout(()=>el.classList.remove("show"),2500); }
+
+/* ---------- render ---------- */
+const WORK_LABEL={battery:"Battery",solar:"Solar",ev_charger:"EV charger"};
+
+function cardHTML(i, feat){
+  return `<div class="inst ${feat?'feat':''}" data-id="${i.id}">
+    ${feat?`<span class="feat-tag" title="This installer pays a flat, disclosed fee for this position. It never changes your recommendation or who is allowed on this list.">Featured — paid placement</span>`:""}
+    <div class="top"><span class="name">${i.name}</span><span class="dist">${i.suburb} · ~${i.dist} km</span></div>
+    <div class="badges">
+      ${i.work.map(w=>`<span class="pill dim">${WORK_LABEL[w]}</span>`).join("")}
+      ${i.vetting.cec?'<span class="pill good">CEC accredited ✓</span>':""}
+      <span class="pill info">Lic ${i.vetting.licence}</span>
+      <span class="pill info">${i.vetting.years} yrs operating</span>
+    </div>
+    <div class="meta">Vetting last verified ${i.vetting.verified}</div>
+    <div class="acts">
+      <button class="primary" data-act="phone" data-id="${i.id}" data-feat="${feat?1:0}">Show phone</button>
+      <a href="${i.website}" data-act="site">Visit website</a>
+    </div></div>`;
+}
+
+function render(){
+  const s=SCEN[scenario], pc=parseInt(document.getElementById("postcode").value)||4000;
+  document.getElementById("banner").innerHTML=
+    `<div class="tag">${s.tag}</div><div class="big">${s.big}</div><div class="why">${s.why}</div>
+     <div style="font-size:12px;color:var(--muted);margin-top:8px;font-style:italic">…(options table, paid-plan gate etc. sit here — omitted in this prototype)…</div>`;
+
+  const dir=document.getElementById("directory");
+
+  /* do-nothing: collapsed by default — the trust moment */
+  if(scenario==="nothing" && !showAnyway){
+    dir.innerHTML=`<h2>Vetted installers near ${pc}</h2>
+      <div class="nothing">Our advice is <b>do nothing</b> — so we're not showing you installers.<br>
+      No one here pays us per lead, and we'd rather you keep your money.<br>
+      <button id="anyway">Show installers anyway</button></div>
+      ${discHTML()}`;
+    document.getElementById("anyway").onclick=()=>{showAnyway=true;evt("directory_shown_anyway",{postcode:pc});render();};
+    evt("directory_viewed",{postcode:pc,collapsed:true});
+    return;
+  }
+
+  const work = scenario==="nothing" ? workFilter : SCEN[scenario].work;
+  const {featured, organic}=match(pc, work);
+
+  const chips=Object.entries(WORK_LABEL).map(([k,v])=>
+    `<button class="chip ${k===work?'on':''}" data-w="${k}">${v}</button>`).join("");
+
+  let body="";
+  if(!featured.length && !organic.length){
+    body=`<div class="empty">No vetted installers in <b>${pc}</b> yet — we're expanding region by region.<br>
+      <input placeholder="you@email.com" id="wl"><button id="wlbtn">Notify me</button></div>`;
+  } else {
+    if(featured.length) body+=`<div class="strip-label">Featured (paid placement — max 2, capped)</div>`+
+                              featured.map(i=>cardHTML(i,true)).join("");
+    if(organic.length)  body+=`<div class="org-label">All vetted installers — ordered by distance, never by fees</div>`+
+                              organic.map(i=>cardHTML(i,false)).join("");
+  }
+
+  dir.innerHTML=`<div class="dir-head"><h2 style="margin:0">Vetted installers near ${pc}</h2></div>
+    <div class="trust">Every installer here passed the same vetting — accreditation, licence and history checked. Featured spots are paid, clearly marked, capped at two, and <b>never affect your recommendation or the ordering below them</b>.</div>
+    <div class="chips" style="margin-bottom:6px">${chips}</div>
+    ${body}${discHTML()}`;
+
+  dir.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{workFilter=c.dataset.w;
+    if(scenario!=="nothing") SCEN[scenario].work=c.dataset.w; render();});
+  dir.querySelectorAll("[data-act=phone]").forEach(b=>b.onclick=()=>{
+    const i=INSTALLERS.find(x=>x.id===b.dataset.id);
+    evt("installer_phone_revealed",{id:i.id,featured:b.dataset.feat==="1",postcode:pc});
+    b.outerHTML=`<span class="phone-shown">${i.phone}</span>`;});
+  const wl=document.getElementById("wlbtn");
+  if(wl) wl.onclick=()=>{evt("empty_state_waitlist_joined",{postcode:pc});
+    wl.parentElement.innerHTML="Thanks — we'll email you when vetted installers reach your area.";};
+  evt("directory_viewed",{postcode:pc,work,featured:featured.length,organic:organic.length});
+}
+
+function discHTML(){
+  return `<div class="disc"><b>How this list works.</b> We vet every installer against public registers (CEC accreditation, electrical licence, ABN) before listing — free and featured alike. Featured installers pay a <b>flat, disclosed fee</b> for position only; we are never paid per lead, per click, or per sale, and <b>we never send your details to anyone</b> — you choose who to contact. Our recommendation engine has no access to this list.</div>`;
+}
+
+document.querySelectorAll(".scen").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".scen").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); scenario=b.dataset.s; showAnyway=false;
+  if(scenario!=="nothing") workFilter=SCEN[scenario].work; render();});
+document.getElementById("postcode").addEventListener("input",render);
+render();
+</script>
+</body>
+</html>
