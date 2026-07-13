@@ -16,6 +16,7 @@ const centroids = centroidsData as unknown as Centroids;
 
 const WORK_TYPES: WorkType[] = ['battery', 'solar', 'ev_charger'];
 const STATUSES = ['active', 'paused', 'delisted'];
+const COMPANY_TYPES = ['installer', 'retailer', 'unknown'];
 const isDate = (s: string) => !Number.isNaN(new Date(s).getTime());
 
 const installers = installersFile.installers;
@@ -33,6 +34,11 @@ describe('installers.json — structural invariants', () => {
   it('every work_type is a known work type', () => {
     for (const i of installers)
       for (const w of i.work_types) expect(WORK_TYPES).toContain(w);
+  });
+
+  it('every company_type is a valid enum value (design §9.2)', () => {
+    for (const i of installers)
+      expect(COMPANY_TYPES, `${i.id} has company_type "${i.company_type}"`).toContain(i.company_type);
   });
 
   it('every vetting.verified_on parses as a date', () => {

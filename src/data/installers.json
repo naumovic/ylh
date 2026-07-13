@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-09",
-  "note": "PLACEHOLDER installers with deliberately fake names (Phase 1). No real business is described here, so a leaked build cannot defame anyone. Real vetted installers arrive one PR at a time in Phase 3. Schema: design section 3.",
+  "version": "2026-07-13",
+  "note": "PLACEHOLDER installers with deliberately fake names (Phase 1). No real business is described here, so a leaked build cannot defame anyone. Real desk-vetted installers arrive one PR at a time in Phase 3. Schema: design section 3 + section 9.2 (company_type). All three company_type values are represented so the badge renders in dev; verified_by 'desk' reflects the register-only v1 entry path (design section 4).",
   "installers": [
     {
       "id": "test-solar-co",
@@ -10,6 +10,7 @@
       "base_postcode": "4157",
       "service_postcodes": { "ranges": [[4000, 4179], [4207, 4230]] },
       "work_types": ["battery", "solar", "ev_charger"],
+      "company_type": "installer",
       "phone": "07 3000 0001",
       "website": "https://example.com/test-solar-co",
       "vetting": {
@@ -19,7 +20,7 @@
         "abn": "11 000 000 001",
         "years_operating": 9,
         "verified_on": "2026-06-01",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": {
         "featured_slots": [
@@ -37,6 +38,7 @@
       "base_postcode": "4178",
       "service_postcodes": { "ranges": [[4151, 4179]] },
       "work_types": ["battery"],
+      "company_type": "retailer",
       "phone": "07 3000 0002",
       "website": "https://example.com/mock-battery-co",
       "vetting": {
@@ -46,7 +48,7 @@
         "abn": "11 000 000 002",
         "years_operating": 6,
         "verified_on": "2026-06-01",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": {
         "featured_slots": [
@@ -63,6 +65,7 @@
       "base_postcode": "4179",
       "service_postcodes": { "ranges": [[4000, 4179]] },
       "work_types": ["battery", "solar"],
+      "company_type": "unknown",
       "phone": "07 3000 0003",
       "website": "https://example.com/placeholder-power-co",
       "vetting": {
@@ -72,7 +75,7 @@
         "abn": "11 000 000 003",
         "years_operating": 12,
         "verified_on": "2026-05-15",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": {
         "featured_slots": [
@@ -89,6 +92,7 @@
       "base_postcode": "4127",
       "service_postcodes": { "ranges": [[4000, 4179]] },
       "work_types": ["battery", "ev_charger"],
+      "company_type": "installer",
       "phone": "07 3000 0004",
       "website": "https://example.com/sample-sparks-electrical",
       "vetting": {
@@ -98,7 +102,7 @@
         "abn": "11 000 000 004",
         "years_operating": 4,
         "verified_on": "2026-06-20",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": { "featured_slots": [] },
       "status": "active"
@@ -111,6 +115,7 @@
       "base_postcode": "4064",
       "service_postcodes": { "ranges": [[4000, 4179]] },
       "work_types": ["solar", "battery"],
+      "company_type": "retailer",
       "phone": "07 3000 0005",
       "website": "https://example.com/demo-energy-co",
       "vetting": {
@@ -120,7 +125,7 @@
         "abn": "11 000 000 005",
         "years_operating": 15,
         "verified_on": "2024-05-01",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": { "featured_slots": [] },
       "status": "active"
@@ -133,6 +138,7 @@
       "base_postcode": "4655",
       "service_postcodes": { "ranges": [[4650, 4670]] },
       "work_types": ["ev_charger", "battery"],
+      "company_type": "unknown",
       "phone": "07 3000 0006",
       "website": "https://example.com/example-ev-installs",
       "vetting": {
@@ -142,7 +148,7 @@
         "abn": "11 000 000 006",
         "years_operating": 7,
         "verified_on": "2026-06-01",
-        "verified_by": "manual"
+        "verified_by": "desk"
       },
       "listing": { "featured_slots": [] },
       "status": "active"
