@@ -6,7 +6,8 @@
 // instead it emits events through an optional `onEvent` callback so the dev page can show
 // them as a toast, exactly like the prototype. No user data is ever sent to installers.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import installersData from '../data/installers.json' with { type: 'json' };
 import zonesData from '../data/zones.json' with { type: 'json' };
 import centroidsData from '../data/postcode-centroids.json' with { type: 'json' };
@@ -405,36 +406,66 @@ function EmptyState({
 }
 
 /** Shared "Two ways to buy" explainer (design §9.2). Neutral between the two models —
- *  opened from any company-type badge's ⓘ. */
+ *  opened from any company-type badge's ⓘ. Rendered as a centred modal (portaled to
+ *  <body>) so it's always in view no matter how far down the list the clicked card is. */
 function TwoWaysExplainer({ onClose }: { onClose: () => void }) {
-  return (
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    dialogRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    // Lock background scroll while the modal is open.
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  return createPortal(
     <div
-      className="mt-3 rounded-lg border border-navy-900/15 bg-surface p-4"
-      data-testid="two-ways-explainer"
-      role="note"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-900/40 p-4"
+      data-testid="two-ways-overlay"
+      onClick={onClose}
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-bold text-navy-900">Two ways to buy</span>
-        <button
-          type="button"
-          onClick={onClose}
-          data-testid="two-ways-close"
-          aria-label="Close explainer"
-          className="text-xs font-semibold text-muted hover:text-navy-900"
-        >
-          Got it
-        </button>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Two ways to buy"
+        tabIndex={-1}
+        data-testid="two-ways-explainer"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border border-navy-900/15 bg-surface p-5 shadow-xl focus:outline-none"
+      >
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm font-bold text-navy-900">Two ways to buy</span>
+          <button
+            type="button"
+            onClick={onClose}
+            data-testid="two-ways-close"
+            aria-label="Close explainer"
+            className="text-xs font-semibold text-muted hover:text-navy-900"
+          >
+            Got it
+          </button>
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted">
+          Some companies here are <b className="text-ink">local installers</b> — the accredited electricians
+          who&apos;ll do the work are on their own staff. Others are <b className="text-ink">retailers</b> — they
+          design and sell the system, then send contracted installers to do the job. Neither is automatically
+          better: installers are often smaller and more direct; retailers can be bigger, with longer track
+          records and stronger buying power. Either way, the physical installation must be done by
+          SAA-accredited installers for your rebates to apply — everyone listed here meets our vetting bar for
+          their type.
+        </p>
       </div>
-      <p className="mt-1.5 text-xs leading-relaxed text-muted">
-        Some companies here are <b className="text-ink">local installers</b> — the accredited electricians
-        who&apos;ll do the work are on their own staff. Others are <b className="text-ink">retailers</b> — they
-        design and sell the system, then send contracted installers to do the job. Neither is automatically
-        better: installers are often smaller and more direct; retailers can be bigger, with longer track
-        records and stronger buying power. Either way, the physical installation must be done by
-        SAA-accredited installers for your rebates to apply — everyone listed here meets our vetting bar for
-        their type.
-      </p>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
