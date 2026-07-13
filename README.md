@@ -54,6 +54,17 @@ Both are `VITE_`-prefixed, so they're **inlined at build time** — changing the
 
 **Dev-only harness:** `npm run dev` → **`/dev/directory`** renders the directory in isolation with a scenario switcher (battery / solar / EV / do-nothing) + postcode input + an event toast. This route is gated on `import.meta.env.DEV` and is excluded from production builds.
 
+**Where to see the directory (two doors to the same component — you don't *have* to use `/dev/directory`):**
+
+| Where | Visible? | How |
+|---|---|---|
+| Local `/` (after completing the wizard) | ✅ | Renders inline below the results — the real integration; flag is auto-on in dev. |
+| Local `/dev/directory` | ✅ | Dev-only harness — flip through every scenario/postcode without the wizard. Never ships to prod. |
+| Production `/` today | ❌ | Flag off — dormant until launch. |
+| Production `/` after launch | ✅ | Set `VITE_FF_DIRECTORY=on` in Render + redeploy; appears inline in results, no new route. |
+
+The `/dev/directory` URL is permanent dev tooling, not a separate page in the product — the directory itself is a `<section>` inside the results page, part of the one build and one deploy.
+
 ### Resend setup (founder, one-time)
 1. Create a Resend account → **Audiences** → create an audience; copy its ID → `RESEND_AUDIENCE_ID`.
 2. **Domains** → add a sending subdomain (e.g. `mail.yourlocalhero.com.au`) and add the shown **DNS records** (SPF/`TXT`, DKIM `CNAME`s, and a return-path/MX) at your DNS host; wait for "Verified".
