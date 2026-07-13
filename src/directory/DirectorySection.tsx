@@ -13,6 +13,7 @@ import centroidsData from '../data/postcode-centroids.json' with { type: 'json' 
 import { match } from './match.ts';
 import type {
   Centroids,
+  CompanyType,
   InstallersFile,
   MatchedInstaller,
   WorkType,
@@ -30,6 +31,13 @@ const WORK_LABEL: Record<WorkType, string> = {
   ev_charger: 'EV charger',
 };
 const WORK_ORDER: WorkType[] = ['battery', 'solar', 'ev_charger'];
+
+// Company-type badge (design §9.2). `unknown` renders NO badge — we never guess a
+// company's delivery model in public. Copy stays neutral between the two models.
+const COMPANY_BADGE: Record<Exclude<CompanyType, 'unknown'>, string> = {
+  installer: 'Local installer',
+  retailer: 'Retailer — uses contracted installers',
+};
 
 /** PostHog events for the directory (design §2). Kept as a named union so the real
  *  analytics layer can type-check that it handles every one. */
@@ -57,6 +65,7 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
   const [showAnyway, setShowAnyway] = useState(false);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [waitlisted, setWaitlisted] = useState(false);
+  const [explainerOpen, setExplainerOpen] = useState(false); // shared "Two ways to buy" (§9.2)
 
   // Re-sync when the engine result changes (e.g. the dev scenario switcher).
   useEffect(() => {
@@ -141,6 +150,8 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
             ))}
           </div>
 
+          {explainerOpen && <TwoWaysExplainer onClose={() => setExplainerOpen(false)} />}
+
           {featured.length === 0 && organic.length === 0 ? (
             <EmptyState
               postcode={postcode}
@@ -166,6 +177,7 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
                         revealed={!!revealed[i.id]}
                         onReveal={() => reveal(i, true)}
                         onVisit={() => onEvent?.('featured_clicked', { id: i.id, postcode })}
+                        onShowExplainer={() => setExplainerOpen(true)}
                       />
                     ))}
                   </div>
@@ -186,6 +198,7 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
                         revealed={!!revealed[i.id]}
                         onReveal={() => reveal(i, false)}
                         onVisit={() => onEvent?.('installer_site_clicked', { id: i.id, postcode })}
+                        onShowExplainer={() => setExplainerOpen(true)}
                       />
                     ))}
                   </div>
@@ -230,15 +243,20 @@ function InstallerCard({
   revealed,
   onReveal,
   onVisit,
+  onShowExplainer,
 }: {
   installer: MatchedInstaller;
   featured: boolean;
   revealed: boolean;
   onReveal: () => void;
   onVisit: () => void;
+  onShowExplainer: () => void;
 }) {
   const { vetting } = installer;
   const dist = Number.isFinite(installer.distanceKm) ? `~${Math.round(installer.distanceKm)} km` : '—';
+  // `unknown` shows no badge — never guess a company's delivery model in public (§9.2).
+  const badgeLabel =
+    installer.company_type === 'unknown' ? null : COMPANY_BADGE[installer.company_type];
   return (
     <div
       data-testid={`installer-${installer.id}`}
@@ -262,6 +280,26 @@ function InstallerCard({
           {installer.suburb} · {dist}
         </span>
       </div>
+
+      {badgeLabel && (
+        <div className="mt-1.5">
+          <span
+            data-testid={`company-badge-${installer.id}`}
+            className="inline-flex items-center gap-1 rounded-full border border-navy-900/15 bg-surface px-2 py-0.5 text-[11px] font-semibold text-navy-700"
+          >
+            {badgeLabel}
+            <button
+              type="button"
+              onClick={onShowExplainer}
+              data-testid={`badge-info-${installer.id}`}
+              aria-label="How this works: two ways to buy"
+              className="grid h-3.5 w-3.5 place-items-center rounded-full bg-navy-900/10 text-[9px] font-bold text-navy-700 hover:bg-navy-900/20"
+            >
+              i
+            </button>
+          </span>
+        </div>
+      )}
 
       <div className="mt-2 flex flex-wrap gap-1.5">
         {installer.work_types.map((w) => (
@@ -362,6 +400,40 @@ function EmptyState({
           </form>
         </>
       )}
+    </div>
+  );
+}
+
+/** Shared "Two ways to buy" explainer (design §9.2). Neutral between the two models —
+ *  opened from any company-type badge's ⓘ. */
+function TwoWaysExplainer({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="mt-3 rounded-lg border border-navy-900/15 bg-surface p-4"
+      data-testid="two-ways-explainer"
+      role="note"
+    >
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-sm font-bold text-navy-900">Two ways to buy</span>
+        <button
+          type="button"
+          onClick={onClose}
+          data-testid="two-ways-close"
+          aria-label="Close explainer"
+          className="text-xs font-semibold text-muted hover:text-navy-900"
+        >
+          Got it
+        </button>
+      </div>
+      <p className="mt-1.5 text-xs leading-relaxed text-muted">
+        Some companies here are <b className="text-ink">local installers</b> — the accredited electricians
+        who&apos;ll do the work are on their own staff. Others are <b className="text-ink">retailers</b> — they
+        design and sell the system, then send contracted installers to do the job. Neither is automatically
+        better: installers are often smaller and more direct; retailers can be bigger, with longer track
+        records and stronger buying power. Either way, the physical installation must be done by
+        SAA-accredited installers for your rebates to apply — everyone listed here meets our vetting bar for
+        their type.
+      </p>
     </div>
   );
 }
