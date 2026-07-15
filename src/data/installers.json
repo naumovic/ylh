@@ -82,6 +82,63 @@
         "featured_slots": []
       },
       "status": "active"
+    },
+    {
+      "id": "level-electrical-solar",
+      "name": "Level Electrical & Solar",
+      "suburb": "Arundel",
+      "state": "QLD",
+      "base_postcode": "4214",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4112,
+            4112
+          ],
+          [
+            4114,
+            4119
+          ],
+          [
+            4123,
+            4133
+          ],
+          [
+            4156,
+            4157
+          ],
+          [
+            4163,
+            4165
+          ],
+          [
+            4183,
+            4221
+          ],
+          [
+            4223,
+            4285
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
+      "company_type": "installer",
+      "website": "https://levelau.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 85719",
+        "abn": "31 629 525 079",
+        "years_operating": 7,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
     }
   ]
 }
