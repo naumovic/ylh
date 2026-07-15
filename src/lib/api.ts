@@ -7,7 +7,8 @@ export interface UnlockPayload {
   lastName?: string;
   email: string;
   consent: boolean;
-  source?: 'unlock' | 'waitlist';
+  source?: 'unlock' | 'waitlist' | 'directory-waitlist';
+  postcode?: string; // directory-waitlist: the postcode with no coverage yet (expansion signal)
   pdfBase64?: string;
 }
 

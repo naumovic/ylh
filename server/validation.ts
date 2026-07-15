@@ -1,7 +1,7 @@
 // Pure, framework-agnostic validation for the email-gate endpoints (Task 4A §3).
 // No I/O — unit-tested directly.
 
-export type UnlockSource = 'unlock' | 'waitlist';
+export type UnlockSource = 'unlock' | 'waitlist' | 'directory-waitlist';
 
 /** Max total request body (Task 4A §3: reject > 7 MB). Enforced at the HTTP layer. */
 export const MAX_BODY_BYTES = 7 * 1024 * 1024;
@@ -31,6 +31,7 @@ export interface UnlockValue {
   firstName?: string;
   lastName?: string;
   consent: true;
+  postcode?: string; // directory-waitlist only — the uncovered postcode (expansion signal)
   pdfBase64?: string;
 }
 
@@ -49,7 +50,8 @@ export function validateUnlock(body: unknown): Validation<UnlockValue> {
   if (typeof body !== 'object' || body === null) return { ok: false, error: 'invalid_body' };
   const b = body as Record<string, unknown>;
 
-  const source: UnlockSource = b.source === 'waitlist' ? 'waitlist' : 'unlock';
+  const source: UnlockSource =
+    b.source === 'waitlist' ? 'waitlist' : b.source === 'directory-waitlist' ? 'directory-waitlist' : 'unlock';
   const email = str(b.email);
   if (!isValidEmail(email)) return { ok: false, error: 'invalid_email' };
   if (b.consent !== true) return { ok: false, error: 'consent_required' };
@@ -71,7 +73,12 @@ export function validateUnlock(body: unknown): Validation<UnlockValue> {
       ? b.pdfBase64
       : undefined;
 
-  return { ok: true, value: { source, email, firstName, lastName, consent: true, pdfBase64 } };
+  const postcode =
+    source === 'directory-waitlist' && typeof b.postcode === 'string'
+      ? b.postcode.trim().slice(0, 8) || undefined
+      : undefined;
+
+  return { ok: true, value: { source, email, firstName, lastName, consent: true, postcode, pdfBase64 } };
 }
 
 /** Validate a POST /api/reserve body (founder reservation — email only). */

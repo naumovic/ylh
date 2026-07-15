@@ -57,6 +57,20 @@ describe('validateUnlock', () => {
     });
     expect(validateUnlock({ consent: true, source: 'waitlist' })).toMatchObject({ ok: false, error: 'invalid_email' });
   });
+
+  it('directory-waitlist keeps email + postcode, drops names/pdf, sends no email', () => {
+    const r = validateUnlock({
+      email: 'd@b.co',
+      consent: true,
+      source: 'directory-waitlist',
+      postcode: '2000',
+      pdfBase64: 'QUJD',
+    });
+    expect(r.ok && r.value.source).toBe('directory-waitlist');
+    expect(r.ok && r.value.postcode).toBe('2000');
+    expect(r.ok && r.value.pdfBase64).toBeUndefined(); // never emails, so no attachment
+    expect(r.ok && r.value.firstName).toBeUndefined(); // email-only form, no names
+  });
 });
 
 describe('validateReserve', () => {

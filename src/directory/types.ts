@@ -25,13 +25,16 @@ export interface FeaturedSlot {
   stripe_sub?: string | null;
 }
 
+// Desk-vet (design §4) verifies register-checkable facts only — ABN, QLD electrical
+// contractor licence, and NETCC (consumer-code) status where applicable. It does NOT
+// verify individual CEC/SAA accreditation or disciplinary history, so neither is claimed
+// here (the honesty guardrail — those checks move to the featured phone call, Phase 4).
 export interface Vetting {
-  cec_accredited: boolean;
-  accreditation_id?: string;
-  electrical_licence: string;
-  abn?: string;
-  years_operating: number;
-  verified_on: string; // ISO date; drives freshness — >12 months old ⇒ omitted from results
+  electrical_licence: string;        // QLD electrical contractor licence — verified
+  abn?: string;                      // verified ABN (omitted where not yet verified)
+  netcc_approved?: boolean;          // NETCC "Approved Seller" verified (retailers / where applicable)
+  years_operating: number;           // entity-verifiable years (never brand claims); 0 = unverified
+  verified_on: string;               // ISO date; drives freshness — >12 months old ⇒ omitted
   verified_by: 'manual' | 'openclaw-job' | 'desk'; // 'desk' = register-only v1 entry path (design §4)
 }
 
@@ -44,7 +47,7 @@ export interface Installer {
   service_postcodes: { ranges: PostcodeRange[] };
   work_types: WorkType[];
   company_type: CompanyType; // design §9.2 — drives the card badge, never the ordering
-  phone: string;
+  phone?: string;            // click-to-reveal; omitted where the site shows none (website-only)
   website: string;
   vetting: Vetting;
   listing: { featured_slots: FeaturedSlot[] };

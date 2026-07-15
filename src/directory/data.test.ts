@@ -53,6 +53,26 @@ describe('installers.json — structural invariants', () => {
   it('every base_postcode is present in the centroid table (distance is computable)', () => {
     for (const i of installers) expect(centroids[i.base_postcode]).toBeDefined();
   });
+
+  it('every installer has a QLD electrical contractor licence recorded', () => {
+    for (const i of installers)
+      expect((i.vetting.electrical_licence ?? '').length, `${i.id} has no licence`).toBeGreaterThan(0);
+  });
+
+  it('verified_by is a known method (desk = register-only v1 entry path)', () => {
+    const METHODS = ['manual', 'openclaw-job', 'desk'];
+    for (const i of installers) expect(METHODS).toContain(i.vetting.verified_by);
+  });
+
+  it('optional vetting fields have the right shape when present', () => {
+    for (const i of installers) {
+      if (i.vetting.abn !== undefined) expect(typeof i.vetting.abn, i.id).toBe('string');
+      if (i.vetting.netcc_approved !== undefined) expect(typeof i.vetting.netcc_approved, i.id).toBe('boolean');
+      if (i.phone !== undefined) expect(typeof i.phone, i.id).toBe('string');
+      expect(typeof i.vetting.years_operating, i.id).toBe('number');
+      expect(i.vetting.years_operating, i.id).toBeGreaterThanOrEqual(0);
+    }
+  });
 });
 
 describe('installers.json — featured slot invariants', () => {

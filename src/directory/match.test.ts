@@ -44,11 +44,10 @@ function inst(p: {
     phone: '07 0000 0000',
     website: 'https://example.com',
     vetting: {
-      cec_accredited: true,
       electrical_licence: 'QLD 0',
       years_operating: p.years ?? 5,
       verified_on: p.verified ?? '2026-06-01',
-      verified_by: 'manual',
+      verified_by: 'desk',
     },
     listing: { featured_slots: p.slots ?? [] },
     status: p.status ?? 'active',
