@@ -130,9 +130,9 @@ describe('installers.json — Brisbane seed (Phase 3 launch gate)', () => {
     expect(by['halcol-energy'].vetting.netcc_approved).toBe(true);
     expect(by['green-com-au'].company_type).toBe('retailer');
     expect(by['gi-energy'].company_type).toBe('retailer');
-    // MC and GI have no ABR-verified ABN yet → the field is absent (never invented).
+    expect(by['gi-energy'].vetting.abn).toBe('69 712 051 376');
+    // MC still awaiting a verified ABN → the field is absent (never invented).
     expect(by['mc-electrical'].vetting.abn).toBeUndefined();
-    expect(by['gi-energy'].vetting.abn).toBeUndefined();
   });
 });
 
