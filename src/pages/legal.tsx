@@ -37,10 +37,12 @@ export function PrivacyPage() {
 
       <h2>What we collect</h2>
       <p>
-        When you unlock your plan or join the waitlist, we collect your <strong>first name, last name and
-        email</strong> (waitlist: email only). The answers you give in the tool are used in your browser to
-        compute your result; we don&apos;t store them on a server. We also collect <strong>anonymous product
-        analytics</strong> (which steps you reach) so we can improve the tool.
+        When you unlock your plan or join a waitlist, we collect your <strong>first name, last name and
+        email</strong> (waitlists: email only). If you ask us to notify you when vetted installers reach your
+        area, we also store the <strong>postcode</strong> you entered, so we know where to expand next. The
+        answers you give in the tool are used in your browser to compute your result; we don&apos;t store them
+        on a server. We also collect <strong>anonymous product analytics</strong> (which steps you reach) so we
+        can improve the tool.
       </p>
 
       <h2>Who processes it</h2>

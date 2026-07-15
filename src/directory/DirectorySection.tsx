@@ -12,6 +12,7 @@ import installersData from '../data/installers.json' with { type: 'json' };
 import zonesData from '../data/zones.json' with { type: 'json' };
 import centroidsData from '../data/postcode-centroids.json' with { type: 'json' };
 import { match } from './match.ts';
+import { postUnlock } from '../lib/api.ts';
 import type {
   Centroids,
   CompanyType,
@@ -127,8 +128,9 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
       ) : (
         <>
           <p className="mt-1 text-xs leading-relaxed text-muted">
-            Every installer here passed the same vetting — accreditation, licence and history checked.
-            Featured spots are paid, clearly marked, capped at two, and{' '}
+            Every company here passed the same desk checks — we verified their ABN, QLD electrical
+            contractor licence, and consumer-code (NETCC) status where applicable. Featured spots are
+            paid, clearly marked, capped at two, and{' '}
             <b className="text-ink">never affect your recommendation or the ordering below them</b>.
           </p>
 
@@ -157,9 +159,11 @@ export function DirectorySection({ postcode, recommendedWork, onEvent }: Directo
             <EmptyState
               postcode={postcode}
               joined={waitlisted}
-              onJoin={() => {
+              onJoin={(email) => {
                 setWaitlisted(true);
-                onEvent?.('empty_state_waitlist_joined', { postcode });
+                onEvent?.('empty_state_waitlist_joined', { postcode, tag: 'directory-waitlist' });
+                // Into Resend Audiences (design §9.4 / Phase 3). Best-effort — never blocks the UX.
+                void postUnlock({ email, consent: true, source: 'directory-waitlist', postcode });
               }}
             />
           ) : (
@@ -308,39 +312,42 @@ function InstallerCard({
             {WORK_LABEL[w]}
           </span>
         ))}
-        {vetting.cec_accredited && (
+        {vetting.netcc_approved && (
           <span className="rounded-full bg-good/15 px-2 py-0.5 text-[11px] font-semibold text-good">
-            CEC accredited ✓
+            NETCC Approved Seller ✓
           </span>
         )}
         <span className="rounded-full bg-navy-700/10 px-2 py-0.5 text-[11px] font-semibold text-navy-700">
           Lic {vetting.electrical_licence}
         </span>
-        <span className="rounded-full bg-navy-700/10 px-2 py-0.5 text-[11px] font-semibold text-navy-700 tabular-nums">
-          {vetting.years_operating} yrs operating
-        </span>
+        {vetting.years_operating > 0 && (
+          <span className="rounded-full bg-navy-700/10 px-2 py-0.5 text-[11px] font-semibold text-navy-700 tabular-nums">
+            {vetting.years_operating} yrs operating
+          </span>
+        )}
       </div>
 
       <div className="mt-2 text-xs text-muted">Vetting last verified {vetting.verified_on}</div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {revealed ? (
-          <span
-            data-testid={`phone-${installer.id}`}
-            className="rounded-lg border border-dashed border-good px-3 py-2 text-sm font-bold text-ink tabular-nums"
-          >
-            {installer.phone}
-          </span>
-        ) : (
-          <button
-            type="button"
-            onClick={onReveal}
-            data-testid={`reveal-${installer.id}`}
-            className="rounded-lg bg-navy-900 px-3 py-2 text-sm font-semibold text-white hover:bg-navy-700"
-          >
-            Show phone
-          </button>
-        )}
+        {installer.phone &&
+          (revealed ? (
+            <span
+              data-testid={`phone-${installer.id}`}
+              className="rounded-lg border border-dashed border-good px-3 py-2 text-sm font-bold text-ink tabular-nums"
+            >
+              {installer.phone}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={onReveal}
+              data-testid={`reveal-${installer.id}`}
+              className="rounded-lg bg-navy-900 px-3 py-2 text-sm font-semibold text-white hover:bg-navy-700"
+            >
+              Show phone
+            </button>
+          ))}
         <a
           href={installer.website}
           target="_blank"
@@ -362,7 +369,7 @@ function EmptyState({
 }: {
   postcode: string;
   joined: boolean;
-  onJoin: () => void;
+  onJoin: (email: string) => void;
 }) {
   const [email, setEmail] = useState('');
   return (
@@ -379,7 +386,7 @@ function EmptyState({
             className="mt-3 flex flex-col justify-center gap-2 sm:flex-row"
             onSubmit={(e) => {
               e.preventDefault();
-              onJoin();
+              onJoin(email.trim());
             }}
           >
             <input
@@ -472,11 +479,13 @@ function TwoWaysExplainer({ onClose }: { onClose: () => void }) {
 function DisclosureFooter() {
   return (
     <p className="mt-4 border-t border-dashed border-hairline pt-3 text-[11px] leading-relaxed text-muted">
-      <b className="text-ink">How this list works.</b> We vet every installer against public registers
-      (CEC accreditation, electrical licence, ABN) before listing — free and featured alike. Featured
-      installers pay a <b className="text-ink">flat, disclosed fee</b> for position only; we are never
-      paid per lead, per click, or per sale, and <b className="text-ink">we never send your details to
-      anyone</b> — you choose who to contact. Our recommendation engine has no access to this list.
+      <b className="text-ink">How this list works.</b> Before listing, we verified each company&apos;s
+      ABN, QLD electrical contractor licence, and consumer-code (NETCC) status where applicable — the
+      same desk checks for every company, free and featured alike. Some are local installers and some are
+      retailers who use contracted installers; tap a badge&apos;s ⓘ to see what that means. Featured spots
+      (when sold) are a <b className="text-ink">flat, disclosed fee</b> for position only — never per lead,
+      per click, or per sale. <b className="text-ink">We never sell your details</b> or send them to anyone;
+      you choose who to contact. Our recommendation engine has no access to this list.
     </p>
   );
 }

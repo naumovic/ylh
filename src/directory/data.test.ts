@@ -53,6 +53,26 @@ describe('installers.json — structural invariants', () => {
   it('every base_postcode is present in the centroid table (distance is computable)', () => {
     for (const i of installers) expect(centroids[i.base_postcode]).toBeDefined();
   });
+
+  it('every installer has a QLD electrical contractor licence recorded', () => {
+    for (const i of installers)
+      expect((i.vetting.electrical_licence ?? '').length, `${i.id} has no licence`).toBeGreaterThan(0);
+  });
+
+  it('verified_by is a known method (desk = register-only v1 entry path)', () => {
+    const METHODS = ['manual', 'openclaw-job', 'desk'];
+    for (const i of installers) expect(METHODS).toContain(i.vetting.verified_by);
+  });
+
+  it('optional vetting fields have the right shape when present', () => {
+    for (const i of installers) {
+      if (i.vetting.abn !== undefined) expect(typeof i.vetting.abn, i.id).toBe('string');
+      if (i.vetting.netcc_approved !== undefined) expect(typeof i.vetting.netcc_approved, i.id).toBe('boolean');
+      if (i.phone !== undefined) expect(typeof i.phone, i.id).toBe('string');
+      expect(typeof i.vetting.years_operating, i.id).toBe('number');
+      expect(i.vetting.years_operating, i.id).toBeGreaterThanOrEqual(0);
+    }
+  });
 });
 
 describe('installers.json — featured slot invariants', () => {
@@ -85,6 +105,32 @@ describe('installers.json — featured slot invariants', () => {
     for (const [key, n] of counts) {
       expect(n, `${key} has ${n} active slots`).toBeLessThanOrEqual(FEATURED_CAP);
     }
+  });
+});
+
+describe('installers.json — Brisbane seed (Phase 3 launch gate)', () => {
+  it('lists the desk-vetted seed companies', () => {
+    expect(installers).toHaveLength(11);
+  });
+
+  it('has NO featured_slots anywhere (organic-only launch, design §6.2)', () => {
+    for (const i of installers) expect(i.listing.featured_slots, i.id).toHaveLength(0);
+  });
+
+  it('every listing was desk-verified on the seed date', () => {
+    for (const i of installers) {
+      expect(i.vetting.verified_by).toBe('desk');
+      expect(i.vetting.verified_on).toBe('2026-07-15');
+    }
+  });
+
+  it('retailers are labelled and (where checked) NETCC-verified; unverified ABNs are omitted, not faked', () => {
+    const by = Object.fromEntries(installers.map((i) => [i.id, i]));
+    expect(by['halcol-energy'].company_type).toBe('retailer');
+    expect(by['halcol-energy'].vetting.netcc_approved).toBe(true);
+    expect(by['green-com-au'].company_type).toBe('retailer');
+    expect(by['gi-energy'].company_type).toBe('retailer');
+    expect(by['gi-energy'].vetting.abn).toBe('69 712 051 376');
   });
 });
 

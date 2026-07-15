@@ -1,156 +1,887 @@
 {
-  "version": "2026-07-13",
-  "note": "PLACEHOLDER installers with deliberately fake names (Phase 1). No real business is described here, so a leaked build cannot defame anyone. Real desk-vetted installers arrive one PR at a time in Phase 3. Schema: design section 3 + section 9.2 (company_type). All three company_type values are represented so the badge renders in dev; verified_by 'desk' reflects the register-only v1 entry path (design section 4).",
+  "version": "2026-07-15",
+  "note": "Brisbane seed — real desk-vetted companies (docs/brisbane-seed-desk-vet-update2.csv). Desk-vet (design §4) verified ABN, QLD electrical contractor licence, and NETCC status where applicable — NOT individual accreditation or disciplinary history. Fake placeholders removed. Featured strip dormant (no featured_slots) — organic-only launch (§6.2).",
   "installers": [
     {
-      "id": "test-solar-co",
-      "name": "Test Solar Co",
-      "suburb": "Capalaba",
+      "id": "rea-solar",
+      "name": "REA Solar",
+      "suburb": "Redland Bay",
       "state": "QLD",
-      "base_postcode": "4157",
-      "service_postcodes": { "ranges": [[4000, 4179], [4207, 4230]] },
-      "work_types": ["battery", "solar", "ev_charger"],
+      "base_postcode": "4165",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4021
+          ],
+          [
+            4029,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4212
+          ],
+          [
+            4214,
+            4218
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4270,
+            4272
+          ],
+          [
+            4280,
+            4280
+          ],
+          [
+            4300,
+            4304
+          ],
+          [
+            4500,
+            4502
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery"
+      ],
       "company_type": "installer",
-      "phone": "07 3000 0001",
-      "website": "https://example.com/test-solar-co",
+      "phone": "1300 360 047",
+      "website": "https://reasolar.com.au",
       "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000001",
-        "electrical_licence": "QLD 00001",
-        "abn": "11 000 000 001",
-        "years_operating": 9,
-        "verified_on": "2026-06-01",
+        "electrical_licence": "QLD 97555",
+        "abn": "93 660 148 185",
+        "years_operating": 4,
+        "verified_on": "2026-07-15",
         "verified_by": "desk"
       },
       "listing": {
-        "featured_slots": [
-          { "zone": "bne-east", "work": "battery", "until": "2026-12-01", "stripe_sub": null },
-          { "zone": "bne-east", "work": "solar", "until": "2026-12-01", "stripe_sub": null }
-        ]
+        "featured_slots": []
       },
       "status": "active"
     },
     {
-      "id": "mock-battery-co",
-      "name": "Mock Battery Co",
-      "suburb": "Wynnum",
+      "id": "level-electrical-solar",
+      "name": "Level Electrical & Solar",
+      "suburb": "Arundel",
       "state": "QLD",
-      "base_postcode": "4178",
-      "service_postcodes": { "ranges": [[4151, 4179]] },
-      "work_types": ["battery"],
+      "base_postcode": "4214",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4112,
+            4112
+          ],
+          [
+            4114,
+            4119
+          ],
+          [
+            4123,
+            4133
+          ],
+          [
+            4156,
+            4157
+          ],
+          [
+            4163,
+            4165
+          ],
+          [
+            4183,
+            4221
+          ],
+          [
+            4223,
+            4285
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
+      "company_type": "installer",
+      "website": "https://levelau.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 85719",
+        "abn": "31 629 525 079",
+        "years_operating": 7,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "springers-solar",
+      "name": "Springers Solar",
+      "suburb": "Lawnton",
+      "state": "QLD",
+      "base_postcode": "4501",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4124
+          ],
+          [
+            4127,
+            4128
+          ],
+          [
+            4131,
+            4132
+          ],
+          [
+            4151,
+            4170
+          ],
+          [
+            4172,
+            4179
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4312,
+            4312
+          ],
+          [
+            4346,
+            4346
+          ],
+          [
+            4500,
+            4509
+          ],
+          [
+            4511,
+            4514
+          ],
+          [
+            4516,
+            4521
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
+      "company_type": "installer",
+      "phone": "1300 105 470",
+      "website": "https://springers.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 69003",
+        "abn": "63 086 620 644",
+        "years_operating": 26,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "positronic-solar",
+      "name": "Positronic Solar",
+      "suburb": "Geebung",
+      "state": "QLD",
+      "base_postcode": "4034",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4207
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4500,
+            4509
+          ],
+          [
+            4511,
+            4513
+          ],
+          [
+            4516,
+            4517
+          ],
+          [
+            4520,
+            4521
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery"
+      ],
+      "company_type": "installer",
+      "phone": "07 3103 6018",
+      "website": "https://positronicsolar.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 67067",
+        "abn": "56 065 856 219",
+        "years_operating": 26,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "halcol-energy",
+      "name": "Halcol Energy",
+      "suburb": "Bokarina",
+      "state": "QLD",
+      "base_postcode": "4575",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4505,
+            4508
+          ],
+          [
+            4511,
+            4514
+          ],
+          [
+            4516,
+            4519
+          ],
+          [
+            4550,
+            4564
+          ],
+          [
+            4566,
+            4567
+          ],
+          [
+            4572,
+            4575
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
       "company_type": "retailer",
-      "phone": "07 3000 0002",
-      "website": "https://example.com/mock-battery-co",
+      "phone": "07 5438 8133",
+      "website": "https://halcolenergy.com.au",
       "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000002",
-        "electrical_licence": "QLD 00002",
-        "abn": "11 000 000 002",
-        "years_operating": 6,
-        "verified_on": "2026-06-01",
+        "electrical_licence": "QLD 91114",
+        "abn": "61 667 508 107",
+        "netcc_approved": true,
+        "years_operating": 3,
+        "verified_on": "2026-07-15",
         "verified_by": "desk"
       },
       "listing": {
-        "featured_slots": [
-          { "zone": "bne-east", "work": "battery", "until": "2026-12-01", "stripe_sub": null }
-        ]
+        "featured_slots": []
       },
       "status": "active"
     },
     {
-      "id": "placeholder-power-co",
-      "name": "Placeholder Power Co",
-      "suburb": "Manly",
+      "id": "expert-electrical",
+      "name": "Expert Electrical",
+      "suburb": "Brendale",
       "state": "QLD",
-      "base_postcode": "4179",
-      "service_postcodes": { "ranges": [[4000, 4179]] },
-      "work_types": ["battery", "solar"],
-      "company_type": "unknown",
-      "phone": "07 3000 0003",
-      "website": "https://example.com/placeholder-power-co",
+      "base_postcode": "4500",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4129
+          ],
+          [
+            4131,
+            4170
+          ],
+          [
+            4172,
+            4179
+          ],
+          [
+            4205,
+            4205
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4312,
+            4312
+          ],
+          [
+            4346,
+            4346
+          ],
+          [
+            4500,
+            4509
+          ],
+          [
+            4511,
+            4514
+          ],
+          [
+            4516,
+            4518
+          ],
+          [
+            4520,
+            4521
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
+      "company_type": "installer",
+      "phone": "07 3195 3633",
+      "website": "https://expertelectrical.com.au",
       "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000003",
-        "electrical_licence": "QLD 00003",
-        "abn": "11 000 000 003",
-        "years_operating": 12,
-        "verified_on": "2026-05-15",
+        "electrical_licence": "QLD 87777",
+        "abn": "27 646 275 872",
+        "years_operating": 5,
+        "verified_on": "2026-07-15",
         "verified_by": "desk"
       },
       "listing": {
-        "featured_slots": [
-          { "zone": "bne-east", "work": "battery", "until": "2026-01-01", "stripe_sub": null }
-        ]
+        "featured_slots": []
       },
       "status": "active"
     },
     {
-      "id": "sample-sparks-electrical",
-      "name": "Sample Sparks Electrical",
-      "suburb": "Springwood",
+      "id": "paramount-energy",
+      "name": "Paramount Energy",
+      "suburb": "Newstead",
+      "state": "QLD",
+      "base_postcode": "4006",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4208
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4300,
+            4304
+          ],
+          [
+            4306,
+            4306
+          ],
+          [
+            4500,
+            4509
+          ],
+          [
+            4511,
+            4513
+          ],
+          [
+            4516,
+            4517
+          ],
+          [
+            4520,
+            4521
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery"
+      ],
+      "company_type": "installer",
+      "phone": "07 3180 8835",
+      "website": "https://paramountenergy.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 1503583",
+        "abn": "15 634 040 234",
+        "years_operating": 7,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "green-com-au",
+      "name": "Green.com.au",
+      "suburb": "Brisbane",
+      "state": "QLD",
+      "base_postcode": "4000",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4022
+          ],
+          [
+            4029,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4208
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4270,
+            4270
+          ],
+          [
+            4280,
+            4280
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4346,
+            4346
+          ],
+          [
+            4500,
+            4506
+          ],
+          [
+            4508,
+            4509
+          ],
+          [
+            4511,
+            4511
+          ],
+          [
+            4513,
+            4513
+          ],
+          [
+            4520,
+            4521
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
+      "company_type": "retailer",
+      "phone": "1300 22 92 92",
+      "website": "https://green.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 1503979",
+        "abn": "93 642 440 711",
+        "netcc_approved": true,
+        "years_operating": 6,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "dj-edwards-solar",
+      "name": "DJ Edwards Solar & Electrical",
+      "suburb": "Murrarie",
+      "state": "QLD",
+      "base_postcode": "4172",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4313
+          ],
+          [
+            4340,
+            4343
+          ],
+          [
+            4345,
+            4347
+          ],
+          [
+            4500,
+            4509
+          ],
+          [
+            4511,
+            4560
+          ],
+          [
+            4564,
+            4564
+          ],
+          [
+            4572,
+            4572
+          ],
+          [
+            4574,
+            4575
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery"
+      ],
+      "company_type": "installer",
+      "website": "https://djedwardselectrical.com.au",
+      "vetting": {
+        "electrical_licence": "QLD 55766",
+        "abn": "33 102 820 860",
+        "years_operating": 23,
+        "verified_on": "2026-07-15",
+        "verified_by": "desk"
+      },
+      "listing": {
+        "featured_slots": []
+      },
+      "status": "active"
+    },
+    {
+      "id": "lms-electrical",
+      "name": "LMS Electrical",
+      "suburb": "Slacks Creek",
       "state": "QLD",
       "base_postcode": "4127",
-      "service_postcodes": { "ranges": [[4000, 4179]] },
-      "work_types": ["battery", "ev_charger"],
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4022
+          ],
+          [
+            4029,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4212
+          ],
+          [
+            4214,
+            4217
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4270,
+            4272
+          ],
+          [
+            4280,
+            4285
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4500,
+            4503
+          ],
+          [
+            4509,
+            4509
+          ],
+          [
+            4520,
+            4520
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery",
+        "ev_charger"
+      ],
       "company_type": "installer",
-      "phone": "07 3000 0004",
-      "website": "https://example.com/sample-sparks-electrical",
+      "phone": "1300 456 776",
+      "website": "https://lmselectrical.com.au",
       "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000004",
-        "electrical_licence": "QLD 00004",
-        "abn": "11 000 000 004",
-        "years_operating": 4,
-        "verified_on": "2026-06-20",
+        "electrical_licence": "QLD 80649",
+        "abn": "47 666 291 872",
+        "years_operating": 3,
+        "verified_on": "2026-07-15",
         "verified_by": "desk"
       },
-      "listing": { "featured_slots": [] },
+      "listing": {
+        "featured_slots": []
+      },
       "status": "active"
     },
     {
-      "id": "demo-energy-co",
-      "name": "Demo Energy Co",
-      "suburb": "Milton",
+      "id": "gi-energy",
+      "name": "GI Energy",
+      "suburb": "Loganholme",
       "state": "QLD",
-      "base_postcode": "4064",
-      "service_postcodes": { "ranges": [[4000, 4179]] },
-      "work_types": ["solar", "battery"],
+      "base_postcode": "4129",
+      "service_postcodes": {
+        "ranges": [
+          [
+            4000,
+            4002
+          ],
+          [
+            4005,
+            4019
+          ],
+          [
+            4029,
+            4070
+          ],
+          [
+            4073,
+            4107
+          ],
+          [
+            4109,
+            4109
+          ],
+          [
+            4111,
+            4170
+          ],
+          [
+            4172,
+            4218
+          ],
+          [
+            4222,
+            4222
+          ],
+          [
+            4226,
+            4226
+          ],
+          [
+            4229,
+            4285
+          ],
+          [
+            4300,
+            4306
+          ],
+          [
+            4500,
+            4500
+          ]
+        ]
+      },
+      "work_types": [
+        "solar",
+        "battery"
+      ],
       "company_type": "retailer",
-      "phone": "07 3000 0005",
-      "website": "https://example.com/demo-energy-co",
+      "phone": "1300 876 269",
+      "website": "https://gienergy.com.au",
       "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000005",
-        "electrical_licence": "QLD 00005",
-        "abn": "11 000 000 005",
-        "years_operating": 15,
-        "verified_on": "2024-05-01",
+        "electrical_licence": "QLD 78514",
+        "abn": "69 712 051 376",
+        "netcc_approved": true,
+        "years_operating": 0,
+        "verified_on": "2026-07-15",
         "verified_by": "desk"
       },
-      "listing": { "featured_slots": [] },
-      "status": "active"
-    },
-    {
-      "id": "example-ev-installs",
-      "name": "Example EV Installs",
-      "suburb": "Hervey Bay",
-      "state": "QLD",
-      "base_postcode": "4655",
-      "service_postcodes": { "ranges": [[4650, 4670]] },
-      "work_types": ["ev_charger", "battery"],
-      "company_type": "unknown",
-      "phone": "07 3000 0006",
-      "website": "https://example.com/example-ev-installs",
-      "vetting": {
-        "cec_accredited": true,
-        "accreditation_id": "A0000006",
-        "electrical_licence": "QLD 00006",
-        "abn": "11 000 000 006",
-        "years_operating": 7,
-        "verified_on": "2026-06-01",
-        "verified_by": "desk"
+      "listing": {
+        "featured_slots": []
       },
-      "listing": { "featured_slots": [] },
       "status": "active"
     }
   ]
