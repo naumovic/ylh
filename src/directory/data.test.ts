@@ -108,6 +108,34 @@ describe('installers.json — featured slot invariants', () => {
   });
 });
 
+describe('installers.json — Brisbane seed (Phase 3 launch gate)', () => {
+  it('lists the 12 desk-vetted seed companies', () => {
+    expect(installers).toHaveLength(12);
+  });
+
+  it('has NO featured_slots anywhere (organic-only launch, design §6.2)', () => {
+    for (const i of installers) expect(i.listing.featured_slots, i.id).toHaveLength(0);
+  });
+
+  it('every listing was desk-verified on the seed date', () => {
+    for (const i of installers) {
+      expect(i.vetting.verified_by).toBe('desk');
+      expect(i.vetting.verified_on).toBe('2026-07-15');
+    }
+  });
+
+  it('retailers are labelled and (where checked) NETCC-verified; unverified ABNs are omitted, not faked', () => {
+    const by = Object.fromEntries(installers.map((i) => [i.id, i]));
+    expect(by['halcol-energy'].company_type).toBe('retailer');
+    expect(by['halcol-energy'].vetting.netcc_approved).toBe(true);
+    expect(by['green-com-au'].company_type).toBe('retailer');
+    expect(by['gi-energy'].company_type).toBe('retailer');
+    // MC and GI have no ABR-verified ABN yet → the field is absent (never invented).
+    expect(by['mc-electrical'].vetting.abn).toBeUndefined();
+    expect(by['gi-energy'].vetting.abn).toBeUndefined();
+  });
+});
+
 describe('zones.json — structural invariants', () => {
   it('every zone range is well-formed (a ≤ b)', () => {
     for (const z of Object.values(zonesFile.zones))
