@@ -109,8 +109,8 @@ describe('installers.json — featured slot invariants', () => {
 });
 
 describe('installers.json — Brisbane seed (Phase 3 launch gate)', () => {
-  it('lists the 12 desk-vetted seed companies', () => {
-    expect(installers).toHaveLength(12);
+  it('lists the desk-vetted seed companies', () => {
+    expect(installers).toHaveLength(11);
   });
 
   it('has NO featured_slots anywhere (organic-only launch, design §6.2)', () => {
@@ -131,8 +131,6 @@ describe('installers.json — Brisbane seed (Phase 3 launch gate)', () => {
     expect(by['green-com-au'].company_type).toBe('retailer');
     expect(by['gi-energy'].company_type).toBe('retailer');
     expect(by['gi-energy'].vetting.abn).toBe('69 712 051 376');
-    // MC still awaiting a verified ABN → the field is absent (never invented).
-    expect(by['mc-electrical'].vetting.abn).toBeUndefined();
   });
 });
 
